@@ -32,5 +32,25 @@ namespace store.server.Infrastructure.Data.Managers.Main
         {
             return await _repo.Manage(entity);
         }
+
+        public async Task<bool> ArchiveCategory(ProductCategories entity)
+        {
+            return await _repo.ArchiveCategory(entity);
+        }
+
+        public async Task<FilteredList<ProductCategories>?> FilteredCategories(Filter filter)
+        {
+            return await _repo.FilteredCategories(filter);
+        }
+
+        public async Task<ProductCategories?> GetCategory(int ID)
+        {
+            return await _repo.GetCategory(ID);
+        }
+
+        public async Task<ProductCategories> ManageCategory(ProductCategories entity)
+        {
+            return await _repo.ManageCategory(entity);
+        }
     }
 }

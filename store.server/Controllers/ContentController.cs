@@ -86,7 +86,7 @@ namespace store.server.Controllers
 
         [HttpPost]
         [Route("manage/product")]
-        public async Task<IActionResult> ManageIssue([FromBody] Products entity)
+        public async Task<IActionResult> ManageProduct([FromBody] Products entity)
         {
             try
             {
@@ -96,6 +96,104 @@ namespace store.server.Controllers
                     if (admin > 0)
                     {
                         var result = await new ProductManager().Manage(entity);
+                        return Ok(result);
+                    }
+                    return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("archive/category")]
+        public async Task<IActionResult> ArchiveCategory([FromBody] ProductCategories entity)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var product = await new ProductManager().GetCategory(entity.ID.Value);
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        var result = await new ProductManager().ArchiveCategory(entity);
+                        return Ok(result);
+                    }
+                    return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("get/category")]
+        public async Task<IActionResult> GetCategory([FromQuery] int ID)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var product = await new ProductManager().GetCategory(ID);
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        return Ok(product);
+                    }
+                    return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("filter/categories")]
+        public async Task<IActionResult> FilterCategories([FromBody] Filter filter)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        var result = await new ProductManager().FilteredCategories(filter);
+                        return Ok(result);
+                    }
+                    return StatusCode(401, "Access denied");
+
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("manage/category")]
+        public async Task<IActionResult> ManageCategory([FromBody] ProductCategories entity)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        var result = await new ProductManager().ManageCategory(entity);
                         return Ok(result);
                     }
                     return StatusCode(401, "Access denied");
