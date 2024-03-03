@@ -1,30 +1,30 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using store.server.Infrastructure.Helpers;
-using store.server.Infrastructure.Models.Main;
+using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Data.Managers.Main;
 
 namespace store.server.Controllers
 {
     [ApiController]
-    [Route("cms")]
-    public class ContentController : ControllerBase
+    [Route("filter")]
+    public class FilterController : ControllerBase
     {
         [HttpPost]
-        [Route("archive/product")]
-        public async Task<IActionResult> ArchiveProduct([FromBody] Products entity)
+        [Route("products")]
+        public async Task<IActionResult> FilterProducts([FromBody] Filter filter)
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
-                    var product = await new ProductManager().Get(entity.ID.Value);
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().Archive(entity);
+                        var result = await new ProductManager().FilteredList(filter);
                         return Ok(result);
                     }
                     return StatusCode(401, "Access denied");
+
                 }
                 return StatusCode(401, "Authorization failed");
             }
@@ -35,8 +35,8 @@ namespace store.server.Controllers
         }
 
         [HttpPost]
-        [Route("manage/product")]
-        public async Task<IActionResult> ManageProduct([FromBody] Products entity)
+        [Route("categories")]
+        public async Task<IActionResult> FilterCategories([FromBody] Filter filter)
         {
             try
             {
@@ -45,10 +45,11 @@ namespace store.server.Controllers
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().Manage(entity);
+                        var result = await new ProductManager().FilteredCategories(filter);
                         return Ok(result);
                     }
                     return StatusCode(401, "Access denied");
+
                 }
                 return StatusCode(401, "Authorization failed");
             }
@@ -59,45 +60,21 @@ namespace store.server.Controllers
         }
 
         [HttpPost]
-        [Route("archive/category")]
-        public async Task<IActionResult> ArchiveCategory([FromBody] ProductCategories entity)
+        [Route("customers")]
+        public async Task<IActionResult> FilterCustomers([FromBody] Filter filter)
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
-                    var product = await new ProductManager().GetCategory(entity.ID.Value);
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().ArchiveCategory(entity);
+                        var result = await new UserManager().FilteredList(filter);
                         return Ok(result);
                     }
                     return StatusCode(401, "Access denied");
-                }
-                return StatusCode(401, "Authorization failed");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(401, ex.Message);
-            }
-        }
 
-        [HttpPost]
-        [Route("manage/category")]
-        public async Task<IActionResult> ManageCategory([FromBody] ProductCategories entity)
-        {
-            try
-            {
-                if (AuthHelpers.Authorize(HttpContext, 1))
-                {
-                    var admin = AuthHelpers.CurrentUserID(HttpContext);
-                    if (admin > 0)
-                    {
-                        var result = await new ProductManager().ManageCategory(entity);
-                        return Ok(result);
-                    }
-                    return StatusCode(401, "Access denied");
                 }
                 return StatusCode(401, "Authorization failed");
             }

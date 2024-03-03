@@ -34,12 +34,16 @@ namespace store.server.Controllers
             try
             {
                 var data = await new TokenManager().RefreshAdminToken(token);
-                var adminData = new AdminReturn
+                if (data != null)
                 {
-                    AccessToken = data.AccessToken,
-                    RefreshToken = data.RefreshToken
-                };
-                return Ok(adminData);
+                    var adminData = new AdminReturn
+                    {
+                        AccessToken = data.AccessToken,
+                        RefreshToken = data.RefreshToken
+                    };
+                    return Ok(adminData);
+                }
+                return Ok(null);
             }
             catch (Exception ex)
             {
