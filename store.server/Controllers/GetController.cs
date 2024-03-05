@@ -33,6 +33,30 @@ namespace store.server.Controllers
         }
 
         [HttpGet]
+        [Route("categories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var categories = await new ProductManager().GetCategories();
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        return Ok(categories);
+                    }
+                    return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpGet]
         [Route("product")]
         public async Task<IActionResult> GetProduct([FromQuery] int ID)
         {

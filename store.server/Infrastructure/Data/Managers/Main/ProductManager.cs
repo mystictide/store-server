@@ -2,6 +2,7 @@
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Data.Repo.Main;
 using store.server.Infrastructure.Models.Helpers;
+using store.server.Infrastructure.Models.Product;
 using store.server.Infrastructure.Data.Interface.Main;
 
 namespace store.server.Infrastructure.Data.Managers.Main
@@ -30,7 +31,12 @@ namespace store.server.Infrastructure.Data.Managers.Main
 
         public async Task<Products?> Manage(Products entity)
         {
-            return await _repo.Manage(entity);
+            var result = await _repo.Manage(entity);
+            await _repo.ManageColors(entity.Colors.ToList(), result.ID.Value);
+            await _repo.ManageImages(entity.Images.ToList(), result.ID.Value);
+            await _repo.ManageSpecs(entity.Specs, result.ID.Value);
+            await _repo.ManageStocks(entity.Stocks.ToList(), result.ID.Value);
+            return result;
         }
 
         public async Task<bool> ArchiveCategory(ProductCategories entity)
@@ -48,9 +54,34 @@ namespace store.server.Infrastructure.Data.Managers.Main
             return await _repo.GetCategory(ID);
         }
 
+        public async Task<IEnumerable<ProductCategories>?> GetCategories()
+        {
+            return await _repo.GetCategories();
+        }
+
         public async Task<ProductCategories> ManageCategory(ProductCategories entity)
         {
             return await _repo.ManageCategory(entity);
+        }
+
+        public async Task<IEnumerable<ProductColors>> ManageColors(List<ProductColors> entity, int ProductID)
+        {
+            return await _repo.ManageColors(entity, ProductID);
+        }
+
+        public async Task<ProductSpecifications> ManageSpecs(ProductSpecifications entity, int ProductID)
+        {
+            return await _repo.ManageSpecs(entity, ProductID);
+        }
+
+        public async Task<IEnumerable<ProductImages>> ManageImages(List<ProductImages> entity, int ProductID)
+        {
+            return await _repo.ManageImages(entity, ProductID);
+        }
+
+        public async Task<IEnumerable<ProductStocks>> ManageStocks(List<ProductStocks> entity, int ProductID)
+        {
+            return await _repo.ManageStocks(entity, ProductID);
         }
     }
 }

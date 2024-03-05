@@ -2,6 +2,7 @@
 using store.server.Infrastructure.Models.Main;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Models.Helpers;
+using store.server.Infrastructure.Models.Product;
 using store.server.Infrastructure.Data.Repo.Helpers;
 using store.server.Infrastructure.Data.Interface.Main;
 
@@ -111,13 +112,13 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 }
 
                 string query = $@"
-                INSERT INTO issues (id, name, description, categoryid, isactive)
+                INSERT INTO products (id, name, description, categoryid, isactive)
 	 	        VALUES ({identity}, {entity.Name}, '{entity.Description}', '{entity.Category?.ID}', true)
                 ON CONFLICT (id) DO UPDATE 
                 SET name = '{entity.Name}',
                       categoryid = '{entity.Category?.ID}',
                       description =  '{entity.Description}',
-                RETURNING id;";
+                RETURNING *;";
 
                 using (var connection = GetConnection)
                 {
@@ -200,16 +201,43 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 string query = $@"
                 SELECT *
                 FROM productcategories t
+                left join productcategories pc on pc.id = t.parentid
                 WHERE t.id = {ID};";
 
                 using (var con = GetConnection)
                 {
                     if (ID > 0)
                     {
-                        var res = await con.QueryFirstOrDefaultAsync<ProductCategories>(query);
-                        return res;
+                        var res = await con.QueryAsync<ProductCategories, ProductCategories, ProductCategories>(query, (i, u) =>
+                        {
+                            i.Parent = u ?? new ProductCategories();
+                            return i;
+                        }, splitOn: "id");
+                        return res.FirstOrDefault();
                     }
                     return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<ProductCategories>?> GetCategories()
+        {
+            try
+            {
+                string query = $@"
+                SELECT *
+                FROM productcategories t
+                WHERE t.isactive = true;";
+
+                using (var con = GetConnection)
+                {
+                    var res = await con.QueryAsync<ProductCategories>(query);
+                    return res;
                 }
             }
             catch (Exception ex)
@@ -224,16 +252,17 @@ namespace store.server.Infrastructure.Data.Repo.Main
             try
             {
                 dynamic identity = entity.ID > 0 ? entity.ID : "default";
+                dynamic parent = entity.Parent?.ID > 0 ? entity.Parent.ID : "NULL";
                 if (entity.Name.Contains("'"))
                 {
                     entity.Name = entity.Name.Replace("'", "''");
                 }
-
                 string query = $@"
-                INSERT INTO issues (id, name, isactive)
-	 	        VALUES ({identity}, {entity.Name}, true)
+                INSERT INTO productcategories (id, parentid, name, isactive)
+	 	        VALUES ({identity}, {parent}, '{entity.Name}', true)
                 ON CONFLICT (id) DO UPDATE 
-                SET name = '{entity.Name}'
+                SET name = '{entity.Name}',
+                      parentid = {parent}
                 RETURNING id;";
 
                 using (var connection = GetConnection)
@@ -241,6 +270,127 @@ namespace store.server.Infrastructure.Data.Repo.Main
                     var res = await connection.QueryFirstOrDefaultAsync<ProductCategories>(query);
                     return res;
                 }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<ProductColors>> ManageColors(List<ProductColors> entity, int ProductID)
+        {
+            try
+            {
+                if (entity.Count > 0)
+                {
+                    using (var connection = GetConnection)
+                    {
+                        string deleteExisting = $@"DELETE from productcolors t where t.productid = {ProductID};";
+                        await connection.QueryAsync<ProductColors>(deleteExisting);
+                        foreach (var item in entity)
+                        {
+                            string query = $@"
+                            INSERT INTO productcolors (id, productid, colorid)
+	 	                    VALUES (default, {ProductID}, {item.Color.Value})
+                            RETURNING *;";
+                            await connection.QueryAsync<ProductColors>(query);
+                        }
+                        return entity;
+                    }
+                }
+                return entity;
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<ProductSpecifications> ManageSpecs(ProductSpecifications entity, int ProductID)
+        {
+            try
+            {
+                dynamic identity = entity.ID > 0 ? entity.ID : "default";
+                string query = $@"
+                INSERT INTO products (id, productid, brandid, material, height, width, weight, depth)
+	 	        VALUES ({identity}, {ProductID}, {entity.BrandID}, {entity.Material}, {entity.Height}, {entity.Height}, {entity.Width}, {entity.Weight}, {entity.Depth})
+                ON CONFLICT (id) DO UPDATE 
+                SET brandid = {entity.BrandID},
+                      material = {entity.Material},
+                      height =  {entity.Height},
+                      width =  {entity.Width},
+                      weight =  {entity.Weight},
+                      depth =  {entity.Depth}
+                RETURNING *;";
+
+                using (var connection = GetConnection)
+                {
+                    var res = await connection.QueryFirstOrDefaultAsync<ProductSpecifications>(query);
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<ProductImages>> ManageImages(List<ProductImages> entity, int ProductID)
+        {
+            try
+            {
+                if (entity.Count > 0)
+                {
+                    using (var connection = GetConnection)
+                    {
+                        foreach (var item in entity)
+                        {
+                            dynamic identity = item.ID > 0 ? item.ID : "default";
+                            string query = $@"
+                            INSERT INTO productimages (id, productid, source)
+	 	                    VALUES ({identity}, {ProductID}, '{item.Source}')
+                            ON CONFLICT (id) DO NOTHING;";
+                            await connection.QueryAsync<ProductImages>(query);
+                        }
+                        string sQuery = $@"Select * from productimages t where t.productid = {ProductID};";
+                        var images = await connection.QueryAsync<ProductImages>(sQuery);
+                        return images;
+                    }
+                }
+                return entity;
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<ProductStocks>> ManageStocks(List<ProductStocks> entity, int ProductID)
+        {
+            try
+            {
+                if (entity.Count > 0)
+                {
+                    using (var connection = GetConnection)
+                    {
+                        string deleteExisting = $@"DELETE from productstocks t where t.productid = {ProductID};";
+                        await connection.QueryAsync<ProductStocks>(deleteExisting);
+                        foreach (var item in entity)
+                        {
+                            string query = $@"
+                            INSERT INTO productstocks (id, productid, colorid, amount)
+	 	                    VALUES (default, {ProductID}, {item.ColorID}, {item.Amount})
+                            RETURNING *;";
+                            await connection.QueryAsync<ProductStocks>(query);
+                        }
+                        return entity;
+                    }
+                }
+                return entity;
             }
             catch (Exception ex)
             {
