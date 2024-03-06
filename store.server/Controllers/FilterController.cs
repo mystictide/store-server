@@ -83,5 +83,55 @@ namespace store.server.Controllers
                 return StatusCode(401, ex.Message);
             }
         }
+
+        [HttpPost]
+        [Route("brands")]
+        public async Task<IActionResult> FilterBrands([FromBody] Filter filter)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        var result = await new ProductManager().FilteredBrands(filter);
+                        return Ok(result);
+                    }
+                    return StatusCode(401, "Access denied");
+
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("materials")]
+        public async Task<IActionResult> FilterMaterials([FromBody] Filter filter)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        var result = await new ProductManager().FilteredMaterials(filter);
+                        return Ok(result);
+                    }
+                    return StatusCode(401, "Access denied");
+
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using store.server.Infrastructure.Helpers;
 using store.server.Infrastructure.Models.Main;
+using store.server.Infrastructure.Models.Product;
 using store.server.Infrastructure.Data.Managers.Main;
 
 namespace store.server.Controllers
@@ -84,6 +85,57 @@ namespace store.server.Controllers
         }
 
         [HttpPost]
+        [Route("archive/brand")]
+        public async Task<IActionResult> ArchiveBrand([FromBody] Brands entity)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var product = await new ProductManager().GetBrand(entity.ID);
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        var result = await new ProductManager().ArchiveBrand(entity);
+                        return Ok(result);
+                    }
+                    return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("archive/material")]
+        public async Task<IActionResult> ArchiveMaterial([FromBody] Materials entity)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var product = await new ProductManager().GetMaterial(entity.ID);
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        var result = await new ProductManager().ArchiveMaterial(entity);
+                        return Ok(result);
+                    }
+                    return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+
+        [HttpPost]
         [Route("manage/category")]
         public async Task<IActionResult> ManageCategory([FromBody] ProductCategories entity)
         {
@@ -95,6 +147,54 @@ namespace store.server.Controllers
                     if (admin > 0)
                     {
                         var result = await new ProductManager().ManageCategory(entity);
+                        return Ok(result);
+                    }
+                    return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("manage/brand")]
+        public async Task<IActionResult> ManageBrand([FromBody] Brands entity)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        var result = await new ProductManager().ManageBrand(entity);
+                        return Ok(result);
+                    }
+                    return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("manage/material")]
+        public async Task<IActionResult> ManageMaterial([FromBody] Materials entity)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        var result = await new ProductManager().ManageMaterial(entity);
                         return Ok(result);
                     }
                     return StatusCode(401, "Access denied");

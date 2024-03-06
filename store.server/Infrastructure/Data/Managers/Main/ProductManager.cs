@@ -83,5 +83,55 @@ namespace store.server.Infrastructure.Data.Managers.Main
         {
             return await _repo.ManageStocks(entity, ProductID);
         }
+
+        public async Task<bool> ArchiveBrand(Brands entity)
+        {
+            return await _repo.ArchiveBrand(entity);
+        }
+
+        public async Task<Brands?> GetBrand(int ID)
+        {
+            return await _repo.GetBrand(ID);
+        }
+
+        public async Task<Brands> ManageBrand(Brands entity)
+        {
+            return await _repo.ManageBrand(entity);
+        }
+
+        public async Task<IEnumerable<Brands>?> GetBrands()
+        {
+            return await _repo.GetBrands();
+        }
+
+        public async Task<bool> ArchiveMaterial(Materials entity)
+        {
+            return await _repo.ArchiveMaterial(entity);
+        }
+
+        public async Task<Materials?> GetMaterial(int ID)
+        {
+            return await _repo.GetMaterial(ID);
+        }
+
+        public async Task<Materials> ManageMaterial(Materials entity)
+        {
+            return await _repo.ManageMaterial(entity);
+        }
+
+        public async Task<IEnumerable<Materials>?> GetMaterials()
+        {
+            return await _repo.GetMaterials();
+        }
+
+        public async Task<FilteredList<Brands>?> FilteredBrands(Filter filter)
+        {
+            return await _repo.FilteredBrands(filter);
+        }
+
+        public async Task<FilteredList<Materials>?> FilteredMaterials(Filter filter)
+        {
+            return await _repo.FilteredMaterials(filter);
+        }
     }
 }

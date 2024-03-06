@@ -314,15 +314,14 @@ namespace store.server.Infrastructure.Data.Repo.Main
             {
                 dynamic identity = entity.ID > 0 ? entity.ID : "default";
                 string query = $@"
-                INSERT INTO products (id, productid, brandid, material, height, width, weight, depth)
-	 	        VALUES ({identity}, {ProductID}, {entity.BrandID}, {entity.Material}, {entity.Height}, {entity.Height}, {entity.Width}, {entity.Weight}, {entity.Depth})
+                INSERT INTO products (id, productid, brandid, materialid, height, width, weight)
+	 	        VALUES ({identity}, {ProductID}, {entity.Brand?.ID}, {entity.Material?.ID}, {entity.Height}, {entity.Height}, {entity.Width}, {entity.Weight})
                 ON CONFLICT (id) DO UPDATE 
-                SET brandid = {entity.BrandID},
-                      material = {entity.Material},
+                SET brandid = {entity.Brand?.ID},
+                      material = {entity.Material?.ID},
                       height =  {entity.Height},
                       width =  {entity.Width},
-                      weight =  {entity.Weight},
-                      depth =  {entity.Depth}
+                      weight =  {entity.Weight}
                 RETURNING *;";
 
                 using (var connection = GetConnection)
@@ -391,6 +390,282 @@ namespace store.server.Infrastructure.Data.Repo.Main
                     }
                 }
                 return entity;
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<bool> ArchiveBrand(Brands entity)
+        {
+            try
+            {
+                string query = $@"
+                UPDATE brands
+                SET isactive = {entity.IsActive} 
+                WHERE id = {entity.ID} 
+                RETURNING isactive;";
+
+                using (var connection = GetConnection)
+                {
+                    var res = await connection.QueryFirstOrDefaultAsync<bool>(query);
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return false;
+            }
+        }
+
+        public async Task<bool> ArchiveMaterial(Materials entity)
+        {
+            try
+            {
+                string query = $@"
+                UPDATE materials
+                SET isactive = {entity.IsActive} 
+                WHERE id = {entity.ID} 
+                RETURNING isactive;";
+
+                using (var connection = GetConnection)
+                {
+                    var res = await connection.QueryFirstOrDefaultAsync<bool>(query);
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return false;
+            }
+        }
+
+        public async Task<Brands?> GetBrand(int ID)
+        {
+            try
+            {
+                string query = $@"
+                SELECT *
+                FROM brands t
+                WHERE t.id = {ID};";
+
+                using (var con = GetConnection)
+                {
+                    if (ID > 0)
+                    {
+                        var res = await con.QueryFirstOrDefaultAsync<Brands>(query);
+                        return res;
+                    }
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<Materials?> GetMaterial(int ID)
+        {
+            try
+            {
+                string query = $@"
+                SELECT *
+                FROM materials t
+                WHERE t.id = {ID};";
+
+                using (var con = GetConnection)
+                {
+                    if (ID > 0)
+                    {
+                        var res = await con.QueryFirstOrDefaultAsync<Materials>(query);
+                        return res;
+                    }
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<Brands> ManageBrand(Brands entity)
+        {
+            try
+            {
+                dynamic identity = entity.ID > 0 ? entity.ID : "default";
+                if (entity.Name.Contains("'"))
+                {
+                    entity.Name = entity.Name.Replace("'", "''");
+                }
+                string query = $@"
+                INSERT INTO brands (id, name, isactive)
+	 	        VALUES ({identity}, '{entity.Name}', true)
+                ON CONFLICT (id) DO UPDATE 
+                SET name = '{entity.Name}'
+                RETURNING id;";
+
+                using (var connection = GetConnection)
+                {
+                    var res = await connection.QueryFirstOrDefaultAsync<Brands>(query);
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<Materials> ManageMaterial(Materials entity)
+        {
+            try
+            {
+                dynamic identity = entity.ID > 0 ? entity.ID : "default";
+                if (entity.Name.Contains("'"))
+                {
+                    entity.Name = entity.Name.Replace("'", "''");
+                }
+                string query = $@"
+                INSERT INTO materials (id, name, isactive)
+	 	        VALUES ({identity}, '{entity.Name}', true)
+                ON CONFLICT (id) DO UPDATE 
+                SET name = '{entity.Name}'
+                RETURNING id;";
+
+                using (var connection = GetConnection)
+                {
+                    var res = await connection.QueryFirstOrDefaultAsync<Materials>(query);
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<Brands>?> GetBrands()
+        {
+            try
+            {
+                string query = $@"
+                SELECT *
+                FROM brands t
+                WHERE t.isactive = true;";
+
+                using (var con = GetConnection)
+                {
+                    var res = await con.QueryAsync<Brands>(query);
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<Materials>?> GetMaterials()
+        {
+            try
+            {
+                string query = $@"
+                SELECT *
+                FROM materials t
+                WHERE t.isactive = true;";
+
+                using (var con = GetConnection)
+                {
+                    var res = await con.QueryAsync<Materials>(query);
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<FilteredList<Brands>?> FilteredBrands(Filter filter)
+        {
+            try
+            {
+                var filterModel = new Brands();
+                FilteredList<Brands> request = new FilteredList<Brands>()
+                {
+                    filter = filter,
+                    filterModel = filterModel,
+                };
+                FilteredList<Brands> result = new FilteredList<Brands>();
+                string WhereClause = $@"WHERE t.name ilike '%{filter.Keyword}%' and t.isactive = {filter.IsActive}";
+                string query_count = $@"Select Count(t.id) from brands t {WhereClause}";
+
+                using (var con = GetConnection)
+                {
+                    result.totalItems = await con.QueryFirstOrDefaultAsync<int>(query_count);
+                    request.filter.pager = new Page(result.totalItems, request.filter.pageSize, request.filter.page);
+                    string query = $@"
+                    SELECT *
+                    FROM brands t
+                    {WhereClause}
+                    order by t.id {request.filter.SortBy}
+                    OFFSET {request.filter.pager.StartIndex} ROWS
+                    FETCH NEXT {request.filter.pageSize} ROWS ONLY";
+                    result.data = await con.QueryAsync<Brands>(query);
+                    result.filter = request.filter;
+                    result.filterModel = request.filterModel;
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<FilteredList<Materials>?> FilteredMaterials(Filter filter)
+        {
+            try
+            {
+                var filterModel = new Materials();
+                FilteredList<Materials> request = new FilteredList<Materials>()
+                {
+                    filter = filter,
+                    filterModel = filterModel,
+                };
+                FilteredList<Materials> result = new FilteredList<Materials>();
+                string WhereClause = $@"WHERE t.name ilike '%{filter.Keyword}%' and t.isactive = {filter.IsActive}";
+                string query_count = $@"Select Count(t.id) from materials t {WhereClause}";
+
+                using (var con = GetConnection)
+                {
+                    result.totalItems = await con.QueryFirstOrDefaultAsync<int>(query_count);
+                    request.filter.pager = new Page(result.totalItems, request.filter.pageSize, request.filter.page);
+                    string query = $@"
+                    SELECT *
+                    FROM materials t
+                    {WhereClause}
+                    order by t.id {request.filter.SortBy}
+                    OFFSET {request.filter.pager.StartIndex} ROWS
+                    FETCH NEXT {request.filter.pageSize} ROWS ONLY";
+                    result.data = await con.QueryAsync<Materials>(query);
+                    result.filter = request.filter;
+                    result.filterModel = request.filterModel;
+                    return result;
+                }
             }
             catch (Exception ex)
             {

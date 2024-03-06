@@ -4,11 +4,10 @@
     {
         public int? ID { get; set; }
         public int? ProductID { get; set; }
-        public int? BrandID { get; set; }
-        public int? Material { get; set; }
+        public Brands? Brand { get; set; }
+        public Materials? Material { get; set; }
         public int? Height { get; set; }
         public int? Width { get; set; }
         public int? Weight { get; set; }
-        public int? Depth { get; set; }
     }
 }
