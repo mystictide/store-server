@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using store.server.Helpers;
+using Microsoft.AspNetCore.Mvc;
 using store.server.Infrastructure.Helpers;
 using store.server.Infrastructure.Models.Main;
 using store.server.Infrastructure.Models.Product;
@@ -10,6 +11,13 @@ namespace store.server.Controllers
     [Route("cms")]
     public class ContentController : ControllerBase
     {
+        private IWebHostEnvironment _env;
+
+        public ContentController(IWebHostEnvironment env)
+        {
+            _env = env;
+        }
+
         [HttpPost]
         [Route("archive/product")]
         public async Task<IActionResult> ArchiveProduct([FromBody] Products entity)
@@ -50,6 +58,64 @@ namespace store.server.Controllers
                         return Ok(result);
                     }
                     return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("manage/image")]
+        public async Task<IActionResult> ManageImage([FromForm] IFormFile file)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    if (file.Length > 0)
+                    {
+                        var path = await CustomHelpers.SaveImage(Int32.Parse(file.FileName), _env.ContentRootPath, file);
+                        if (path != null)
+                        {
+                            var result = await new ProductManager().ManageImage(path, Int32.Parse(file.FileName));
+                            return Ok(result);
+                        }
+                        else
+                        {
+                            return StatusCode(401, "Failed to save image");
+                        }
+                    }
+                    return StatusCode(401, "Failed to save image");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("delete/image")]
+        public async Task<IActionResult> DeleteImage([FromBody] ProductImages entity)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var res = await CustomHelpers.DeleteImage(entity, _env.ContentRootPath);
+                    if (res)
+                    {
+                        var result = await new ProductManager().DeleteImage(entity);
+                        return Ok(result);
+                    }
+                    else
+                    {
+                        return StatusCode(401, "Failed to delete image");
+                    }
                 }
                 return StatusCode(401, "Authorization failed");
             }
@@ -133,7 +199,6 @@ namespace store.server.Controllers
                 return StatusCode(401, ex.Message);
             }
         }
-
 
         [HttpPost]
         [Route("manage/category")]

@@ -33,9 +33,7 @@ namespace store.server.Infrastructure.Data.Managers.Main
         {
             var result = await _repo.Manage(entity);
             await _repo.ManageColors(entity.Colors.ToList(), result.ID.Value);
-            await _repo.ManageImages(entity.Images.ToList(), result.ID.Value);
             await _repo.ManageSpecs(entity.Specs, result.ID.Value);
-            await _repo.ManageStocks(entity.Stocks.ToList(), result.ID.Value);
             return result;
         }
 
@@ -64,7 +62,7 @@ namespace store.server.Infrastructure.Data.Managers.Main
             return await _repo.ManageCategory(entity);
         }
 
-        public async Task<IEnumerable<ProductColors>> ManageColors(List<ProductColors> entity, int ProductID)
+        public async Task<IEnumerable<Colors>> ManageColors(List<Colors> entity, int ProductID)
         {
             return await _repo.ManageColors(entity, ProductID);
         }
@@ -74,9 +72,14 @@ namespace store.server.Infrastructure.Data.Managers.Main
             return await _repo.ManageSpecs(entity, ProductID);
         }
 
-        public async Task<IEnumerable<ProductImages>> ManageImages(List<ProductImages> entity, int ProductID)
+        public async Task<IEnumerable<ProductImages>> ManageImage(string path, int ProductID)
         {
-            return await _repo.ManageImages(entity, ProductID);
+            return await _repo.ManageImage(path, ProductID);
+        }
+
+        public async Task<IEnumerable<ProductImages>> DeleteImage(ProductImages entity)
+        {
+            return await _repo.DeleteImage(entity);
         }
 
         public async Task<IEnumerable<ProductStocks>> ManageStocks(List<ProductStocks> entity, int ProductID)
@@ -122,6 +125,10 @@ namespace store.server.Infrastructure.Data.Managers.Main
         public async Task<IEnumerable<Materials>?> GetMaterials()
         {
             return await _repo.GetMaterials();
+        }
+        public async Task<IEnumerable<Colors>?> GetColors()
+        {
+            return await _repo.GetColors();
         }
 
         public async Task<FilteredList<Brands>?> FilteredBrands(Filter filter)

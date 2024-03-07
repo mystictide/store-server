@@ -1,15 +1,11 @@
 ﻿using SkiaSharp;
+using store.server.Infrastructure.Models.Product;
 using store.server.Infrastructure.Data.Repo.Helpers;
 
 namespace store.server.Helpers
 {
     public class CustomHelpers
     {
-        public static string PathFromUserID(string UserID)
-        {
-            return "/" + string.Join("/", UserID.ToArray()) + "/";
-        }
-
         public static async Task<byte[]> ResizeImage(IFormFile file, int width, int height)
         {
             using (var stream = new MemoryStream())
@@ -85,22 +81,20 @@ namespace store.server.Helpers
 
         }
 
-        public static async Task<string> SaveUserAvatar(int UserID, string envPath, IFormFile file)
+        public static async Task<string> SaveImage(int ProductID, string envPath, IFormFile file)
         {
             try
             {
-                var userPath = PathFromUserID(UserID.ToString());
-                var savePath = envPath + "/media/avatars/user" + userPath;
+                var savePath = envPath + "/media/products/" + ProductID + "/";
+                var fileName = $"{Guid.NewGuid()}.jpg";
 
-                var small = await ResizeImage(file, 220, 220);
-                //var large = await ResizeImage(file, 800, 800);
-                if (small != null)
+                var size = await ResizeImage(file, 600, 600);
+                if (size != null)
                 {
-                    var writeSmall = await WriteImage(small, savePath, "ua-small.jpg");
-                    //var writeLarge = await WriteImage(large, savePath, "ua-large.jpg");
-                    if (writeSmall)
+                    var write = await WriteImage(size, savePath, fileName);
+                    if (write)
                     {
-                        return userPath;
+                        return fileName;
                     }
                     else
                     {
@@ -116,6 +110,26 @@ namespace store.server.Helpers
             {
                 await new LogsRepository().CreateLog(ex);
                 return null;
+            }
+        }
+
+        public static async Task<bool> DeleteImage(ProductImages image, string envPath)
+        {
+            try
+            {
+                var imagePath = envPath + "/media/products/" + image.ID + "/" + $"{image.Source}.jpg";
+
+                if (File.Exists(imagePath))
+                {
+                    File.Delete(imagePath);
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return false;
             }
         }
     }

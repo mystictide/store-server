@@ -76,16 +76,39 @@ namespace store.server.Infrastructure.Data.Repo.Main
             try
             {
                 string query = $@"
-                SELECT *
-                FROM products t
+                SELECT * FROM products t
+                left join productcategories pc on pc.id = t.categoryid
                 WHERE t.id = {ID};";
+
+                string cQuery = $@"
+                SELECT * FROM colors t
+                where t.id in (select colorid from productcolors p where p.productid = {ID});";
+
+                string sQuery = $@"
+                SELECT * FROM productspecifications t
+                left join brands b on b.id = t.brandid
+                left join materials m on m.id = t.materialid
+                where t.productid = {ID};";
 
                 using (var con = GetConnection)
                 {
                     if (ID > 0)
                     {
-                        var res = await con.QueryFirstOrDefaultAsync<Products>(query);
-                        return res;
+                        var res = await con.QueryAsync<Products, ProductCategories, Products>(query, (i, c) =>
+                        {
+                            i.Category = c ?? new ProductCategories();
+                            i.Specs = new ProductSpecifications();
+                            return i;
+                        }, splitOn: "id");
+                        var specs = await con.QueryAsync<ProductSpecifications, Brands, Materials, ProductSpecifications>(sQuery, (i, b, m) =>
+                        {
+                            i.Brand = b ?? new Brands();
+                            i.Material = m ?? new Materials();
+                            return i;
+                        }, splitOn: "id");
+                        res.FirstOrDefault().Specs = specs.FirstOrDefault();
+                        res.FirstOrDefault().Colors = await con.QueryAsync<Colors>(cQuery);
+                        return res.FirstOrDefault();
                     }
                     return null;
                 }
@@ -113,12 +136,12 @@ namespace store.server.Infrastructure.Data.Repo.Main
 
                 string query = $@"
                 INSERT INTO products (id, name, description, categoryid, isactive)
-	 	        VALUES ({identity}, {entity.Name}, '{entity.Description}', '{entity.Category?.ID}', true)
+	 	        VALUES ({identity}, '{entity.Name}', '{entity.Description}', {entity.Category?.ID}, true)
                 ON CONFLICT (id) DO UPDATE 
                 SET name = '{entity.Name}',
-                      categoryid = '{entity.Category?.ID}',
-                      description =  '{entity.Description}',
-                RETURNING *;";
+                      categoryid = {entity.Category?.ID},
+                      description =  '{entity.Description}'
+                RETURNING id;";
 
                 using (var connection = GetConnection)
                 {
@@ -278,7 +301,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
             }
         }
 
-        public async Task<IEnumerable<ProductColors>> ManageColors(List<ProductColors> entity, int ProductID)
+        public async Task<IEnumerable<Colors>> ManageColors(List<Colors> entity, int ProductID)
         {
             try
             {
@@ -287,14 +310,14 @@ namespace store.server.Infrastructure.Data.Repo.Main
                     using (var connection = GetConnection)
                     {
                         string deleteExisting = $@"DELETE from productcolors t where t.productid = {ProductID};";
-                        await connection.QueryAsync<ProductColors>(deleteExisting);
+                        await connection.QueryAsync<Colors>(deleteExisting);
                         foreach (var item in entity)
                         {
                             string query = $@"
                             INSERT INTO productcolors (id, productid, colorid)
-	 	                    VALUES (default, {ProductID}, {item.Color.Value})
+	 	                    VALUES (default, {ProductID}, {item.ID})
                             RETURNING *;";
-                            await connection.QueryAsync<ProductColors>(query);
+                            await connection.QueryAsync<Colors>(query);
                         }
                         return entity;
                     }
@@ -314,11 +337,11 @@ namespace store.server.Infrastructure.Data.Repo.Main
             {
                 dynamic identity = entity.ID > 0 ? entity.ID : "default";
                 string query = $@"
-                INSERT INTO products (id, productid, brandid, materialid, height, width, weight)
-	 	        VALUES ({identity}, {ProductID}, {entity.Brand?.ID}, {entity.Material?.ID}, {entity.Height}, {entity.Height}, {entity.Width}, {entity.Weight})
+                INSERT INTO productspecifications (id, productid, brandid, materialid, height, width, weight)
+	 	        VALUES ({identity}, {ProductID}, {entity.Brand?.ID}, {entity.Material?.ID}, {entity.Height}, {entity.Width}, {entity.Weight})
                 ON CONFLICT (id) DO UPDATE 
                 SET brandid = {entity.Brand?.ID},
-                      material = {entity.Material?.ID},
+                      materialid = {entity.Material?.ID},
                       height =  {entity.Height},
                       width =  {entity.Width},
                       weight =  {entity.Weight}
@@ -337,29 +360,40 @@ namespace store.server.Infrastructure.Data.Repo.Main
             }
         }
 
-        public async Task<IEnumerable<ProductImages>> ManageImages(List<ProductImages> entity, int ProductID)
+        public async Task<IEnumerable<ProductImages>> ManageImage(string path, int ProductID)
         {
             try
             {
-                if (entity.Count > 0)
+                string query = $@"
+                INSERT INTO productimages (id, productid, source)
+	 	        VALUES (default, {ProductID}, '{path}')
+                ON CONFLICT (id) DO NOTHING;";
+                using (var connection = GetConnection)
                 {
-                    using (var connection = GetConnection)
-                    {
-                        foreach (var item in entity)
-                        {
-                            dynamic identity = item.ID > 0 ? item.ID : "default";
-                            string query = $@"
-                            INSERT INTO productimages (id, productid, source)
-	 	                    VALUES ({identity}, {ProductID}, '{item.Source}')
-                            ON CONFLICT (id) DO NOTHING;";
-                            await connection.QueryAsync<ProductImages>(query);
-                        }
-                        string sQuery = $@"Select * from productimages t where t.productid = {ProductID};";
-                        var images = await connection.QueryAsync<ProductImages>(sQuery);
-                        return images;
-                    }
+                    await connection.QueryAsync<ProductImages>(query);
+                    string sQuery = $@"Select * from productimages t where t.productid = {ProductID};";
+                    var images = await connection.QueryAsync<ProductImages>(sQuery);
+                    return images;
                 }
-                return entity;
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+        public async Task<IEnumerable<ProductImages>> DeleteImage(ProductImages entity)
+        {
+            try
+            {
+                string query = $@"
+                DELETE from productimages t where t.id = {entity.ID};
+                Select * from productimages t where t.productid = {entity.ProductID};";
+                using (var connection = GetConnection)
+                {
+                    var images = await connection.QueryAsync<ProductImages>(query);
+                    return images;
+                }
             }
             catch (Exception ex)
             {
@@ -588,6 +622,25 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 using (var con = GetConnection)
                 {
                     var res = await con.QueryAsync<Materials>(query);
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<Colors>?> GetColors()
+        {
+            try
+            {
+                string query = $@"SELECT * FROM colors";
+
+                using (var con = GetConnection)
+                {
+                    var res = await con.QueryAsync<Colors>(query);
                     return res;
                 }
             }

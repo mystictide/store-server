@@ -21,9 +21,11 @@ namespace store.server.Infrastructure.Data.Interface.Main
         Task<IEnumerable<ProductCategories>?> GetCategories();
         Task<IEnumerable<Brands>?> GetBrands();
         Task<IEnumerable<Materials>?> GetMaterials();
-        Task<IEnumerable<ProductColors>> ManageColors(List<ProductColors> entity, int ProductID);
+        Task<IEnumerable<Colors>?> GetColors();
+        Task<IEnumerable<Colors>> ManageColors(List<Colors> entity, int ProductID);
         Task<ProductSpecifications> ManageSpecs(ProductSpecifications entity, int ProductID);
-        Task<IEnumerable<ProductImages>> ManageImages(List<ProductImages> entity, int ProductID);
+        Task<IEnumerable<ProductImages>> ManageImage(string path, int ProductID);
+        Task<IEnumerable<ProductImages>> DeleteImage(ProductImages entity);
         Task<IEnumerable<ProductStocks>> ManageStocks(List<ProductStocks> entity, int ProductID);
     }
 }

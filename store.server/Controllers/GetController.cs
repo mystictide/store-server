@@ -112,11 +112,11 @@ namespace store.server.Controllers
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
-                    var categories = await new ProductManager().GetBrands();
+                    var brands = await new ProductManager().GetBrands();
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        return Ok(categories);
+                        return Ok(brands);
                     }
                     return StatusCode(401, "Access denied");
                 }
@@ -136,11 +136,35 @@ namespace store.server.Controllers
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
-                    var categories = await new ProductManager().GetMaterials();
+                    var materials = await new ProductManager().GetMaterials();
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        return Ok(categories);
+                        return Ok(materials);
+                    }
+                    return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("colors")]
+        public async Task<IActionResult> GetColors()
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var colors = await new ProductManager().GetColors();
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        return Ok(colors);
                     }
                     return StatusCode(401, "Access denied");
                 }
