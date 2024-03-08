@@ -13,7 +13,7 @@ namespace store.server.Infrastructure.Data.Repo.Auth
             {
                 string WhereClause = $" WHERE t.token = '{token}'";
                 string query = $@"
-                SELECT * FROM  {(admin ? "admintokens" : "usertokens")}  t {WhereClause};";
+                SELECT * FROM {(admin ? "admintokens" : "usertokens")} t {WhereClause};";
 
                 using (var con = GetConnection)
                 {
@@ -53,8 +53,9 @@ namespace store.server.Infrastructure.Data.Repo.Auth
             {
                 string WhereClause = $" WHERE t.token = '{token}'";
                 string query = $@"
+                SET datestyle = dmy;
                 INSERT INTO {(admin ? "admintokens" : "usertokens")} (id, userid, token, expirydate)
-	                VALUES ('default', '{token.UserID}', '{token.Token}', '{token.ExpiryDate}'::timestamp)
+	                VALUES (default, '{token.UserID}', '{token.Token}', '{token.ExpiryDate}'::timestamp)
                 RETURNING *;";
 
                 using (var con = GetConnection)

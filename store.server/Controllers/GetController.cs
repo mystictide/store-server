@@ -1,37 +1,26 @@
-﻿using store.server.Helpers;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using store.server.Infrastructure.Helpers;
-using store.server.Infrastructure.Models.Main;
-using store.server.Infrastructure.Models.Product;
 using store.server.Infrastructure.Data.Managers.Main;
 
 namespace store.server.Controllers
 {
     [ApiController]
-    [Route("cms")]
-    public class ContentController : ControllerBase
+    [Route("get")]
+    public class GetController : ControllerBase
     {
-        private IWebHostEnvironment _env;
-
-        public ContentController(IWebHostEnvironment env)
-        {
-            _env = env;
-        }
-
-        [HttpPost]
-        [Route("archive/product")]
-        public async Task<IActionResult> ArchiveProduct([FromBody] Products entity)
+        [HttpGet]
+        [Route("category")]
+        public async Task<IActionResult> GetCategory([FromQuery] int ID)
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
-                    var product = await new ProductManager().Get(entity.ID.Value);
+                    var product = await new ProductManager().GetCategory(ID);
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().Archive(entity);
-                        return Ok(result);
+                        return Ok(product);
                     }
                     return StatusCode(401, "Access denied");
                 }
@@ -43,19 +32,19 @@ namespace store.server.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("manage/product")]
-        public async Task<IActionResult> ManageProduct([FromBody] Products entity)
+        [HttpGet]
+        [Route("brand")]
+        public async Task<IActionResult> GetBrand([FromQuery] int ID)
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
+                    var product = await new ProductManager().GetBrand(ID);
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().Manage(entity);
-                        return Ok(result);
+                        return Ok(product);
                     }
                     return StatusCode(401, "Access denied");
                 }
@@ -67,78 +56,19 @@ namespace store.server.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("manage/image")]
-        public async Task<IActionResult> ManageImage([FromForm] IFormFile file)
+        [HttpGet]
+        [Route("material")]
+        public async Task<IActionResult> GetMaterial([FromQuery] int ID)
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
-                    if (file.Length > 0)
-                    {
-                        var path = await CustomHelpers.SaveImage(Int32.Parse(file.FileName), _env.ContentRootPath, file);
-                        if (path != null)
-                        {
-                            var result = await new ProductManager().ManageImage(path, Int32.Parse(file.FileName));
-                            return Ok(result);
-                        }
-                        else
-                        {
-                            return StatusCode(401, "Failed to save image");
-                        }
-                    }
-                    return StatusCode(401, "Failed to save image");
-                }
-                return StatusCode(401, "Authorization failed");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(401, ex.Message);
-            }
-        }
-
-        [HttpPost]
-        [Route("delete/image")]
-        public async Task<IActionResult> DeleteImage([FromBody] ProductImages entity)
-        {
-            try
-            {
-                if (AuthHelpers.Authorize(HttpContext, 1))
-                {
-                    var res = await CustomHelpers.DeleteImage(entity, _env.ContentRootPath);
-                    if (res)
-                    {
-                        var result = await new ProductManager().DeleteImage(entity);
-                        return Ok(result);
-                    }
-                    else
-                    {
-                        return StatusCode(401, "Failed to delete image");
-                    }
-                }
-                return StatusCode(401, "Authorization failed");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(401, ex.Message);
-            }
-        }
-
-        [HttpPost]
-        [Route("archive/category")]
-        public async Task<IActionResult> ArchiveCategory([FromBody] ProductCategories entity)
-        {
-            try
-            {
-                if (AuthHelpers.Authorize(HttpContext, 1))
-                {
-                    var product = await new ProductManager().GetCategory(entity.ID.Value);
+                    var product = await new ProductManager().GetMaterial(ID);
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().ArchiveCategory(entity);
-                        return Ok(result);
+                        return Ok(product);
                     }
                     return StatusCode(401, "Access denied");
                 }
@@ -150,20 +80,19 @@ namespace store.server.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("archive/brand")]
-        public async Task<IActionResult> ArchiveBrand([FromBody] Brands entity)
+        [HttpGet]
+        [Route("categories")]
+        public async Task<IActionResult> GetCategories()
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
-                    var product = await new ProductManager().GetBrand(entity.ID);
+                    var categories = await new ProductManager().GetCategories();
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().ArchiveBrand(entity);
-                        return Ok(result);
+                        return Ok(categories);
                     }
                     return StatusCode(401, "Access denied");
                 }
@@ -175,20 +104,19 @@ namespace store.server.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("archive/material")]
-        public async Task<IActionResult> ArchiveMaterial([FromBody] Materials entity)
+        [HttpGet]
+        [Route("brands")]
+        public async Task<IActionResult> GetBrands()
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
-                    var product = await new ProductManager().GetMaterial(entity.ID);
+                    var brands = await new ProductManager().GetBrands();
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().ArchiveMaterial(entity);
-                        return Ok(result);
+                        return Ok(brands);
                     }
                     return StatusCode(401, "Access denied");
                 }
@@ -200,19 +128,19 @@ namespace store.server.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("manage/category")]
-        public async Task<IActionResult> ManageCategory([FromBody] ProductCategories entity)
+        [HttpGet]
+        [Route("materials")]
+        public async Task<IActionResult> GetMaterials()
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
+                    var materials = await new ProductManager().GetMaterials();
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().ManageCategory(entity);
-                        return Ok(result);
+                        return Ok(materials);
                     }
                     return StatusCode(401, "Access denied");
                 }
@@ -224,19 +152,19 @@ namespace store.server.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("manage/brand")]
-        public async Task<IActionResult> ManageBrand([FromBody] Brands entity)
+        [HttpGet]
+        [Route("colors")]
+        public async Task<IActionResult> GetColors()
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
+                    var colors = await new ProductManager().GetColors();
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().ManageBrand(entity);
-                        return Ok(result);
+                        return Ok(colors);
                     }
                     return StatusCode(401, "Access denied");
                 }
@@ -248,19 +176,43 @@ namespace store.server.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("manage/material")]
-        public async Task<IActionResult> ManageMaterial([FromBody] Materials entity)
+        [HttpGet]
+        [Route("product")]
+        public async Task<IActionResult> GetProduct([FromQuery] int ID)
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
+                    var product = await new ProductManager().Get(ID);
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().ManageMaterial(entity);
-                        return Ok(result);
+                        return Ok(product);
+                    }
+                    return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("customer")]
+        public async Task<IActionResult> GetCustomer([FromQuery] int ID)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var product = await new UserManager().Get(ID);
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        return Ok(product);
                     }
                     return StatusCode(401, "Access denied");
                 }

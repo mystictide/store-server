@@ -3,6 +3,8 @@
     public class ProductCategories
     {
         public int? ID { get; set; }
+        public ProductCategories? Parent { get; set; }
         public string? Name { get; set; }
+        public bool IsActive { get; set; }
     }
 }

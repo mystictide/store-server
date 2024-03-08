@@ -34,10 +34,16 @@ namespace store.server.Controllers
             try
             {
                 var data = await new TokenManager().RefreshAdminToken(token);
-                var adminData = new AdminReturn();
-                adminData.AccessToken = data.AccessToken;
-                adminData.RefreshToken = data.RefreshToken;
-                return Ok(adminData);
+                if (data != null)
+                {
+                    var adminData = new AdminReturn
+                    {
+                        AccessToken = data.AccessToken,
+                        RefreshToken = data.RefreshToken
+                    };
+                    return Ok(adminData);
+                }
+                return Ok(null);
             }
             catch (Exception ex)
             {
@@ -111,11 +117,7 @@ namespace store.server.Controllers
             try
             {
                 var data = await new AdminManager().Login(admin);
-                var adminData = new AdminReturn();
-                adminData.Client.ID = data.ID;
-                adminData.Client.Email = data.Email;
-                adminData.AccessToken = data.AccessToken;
-                adminData.RefreshToken = data.RefreshToken;
+                var adminData = new AdminReturn { Client = new AdminClient { ID = data.ID, Email = data.Email }, AccessToken = data.AccessToken, RefreshToken = data.RefreshToken };
                 return Ok(adminData);
             }
             catch (Exception ex)
