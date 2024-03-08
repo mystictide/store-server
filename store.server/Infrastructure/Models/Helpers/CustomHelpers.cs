@@ -117,11 +117,13 @@ namespace store.server.Helpers
         {
             try
             {
-                var imagePath = envPath + "/media/products/" + image.ID + "/" + $"{image.Source}.jpg";
+                var folderPath = envPath + "/media/products/" + image.ProductID + "/";
+                var imagePath = folderPath + $"{image.Source}";
 
                 if (File.Exists(imagePath))
                 {
                     File.Delete(imagePath);
+                    Directory.Delete(folderPath);
                     return true;
                 }
                 return false;
