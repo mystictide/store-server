@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using static Dapper.SqlMapper;
 using store.server.Infrastructure.Models.Main;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Models.Helpers;
@@ -394,6 +395,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
         {
             try
             {
+                dynamic identity = entity.ID > 0 ? entity.ID : "default";
                 string query = $@"
                 DELETE from productimages t where t.id = {entity.ID};
                 Select * from productimages t where t.productid = {entity.ProductID};";
@@ -410,28 +412,22 @@ namespace store.server.Infrastructure.Data.Repo.Main
             }
         }
 
-        public async Task<IEnumerable<ProductStocks>> ManageStocks(Products entity)
+        public async Task<IEnumerable<ProductStocks>> ManageStocks(ProductStocks entity)
         {
             try
             {
-                if (entity?.Stocks?.Count() > 0)
+                dynamic identity = entity.ID > 0 ? entity.ID : "default";
+                string query = $@"
+                INSERT INTO productstocks (id, productid, colorid, amount)
+	 	        VALUES ({identity}, {entity.ProductID}, {entity.ColorID}, {entity.Amount})
+                ON CONFLICT (id) DO UPDATE SET amount = '{entity.Amount}';
+                Select * from productimages t where t.productid = {entity.ProductID};";
+
+                using (var connection = GetConnection)
                 {
-                    using (var connection = GetConnection)
-                    {
-                        string deleteExisting = $@"DELETE from productstocks t where t.productid = {entity.ID};";
-                        await connection.QueryAsync<ProductStocks>(deleteExisting);
-                        foreach (var item in entity.Stocks)
-                        {
-                            string query = $@"
-                            INSERT INTO productstocks (id, productid, colorid, amount)
-	 	                    VALUES (default, {entity.ID}, {item.ColorID}, {item.Amount})
-                            RETURNING *;";
-                            await connection.QueryAsync<ProductStocks>(query);
-                        }
-                        return entity.Stocks;
-                    }
+                    var result = await connection.QueryAsync<ProductStocks>(query);
+                    return result;
                 }
-                return entity?.Stocks;
             }
             catch (Exception ex)
             {

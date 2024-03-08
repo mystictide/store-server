@@ -100,7 +100,7 @@ namespace store.server.Controllers
 
         [HttpPost]
         [Route("manage/stocks")]
-        public async Task<IActionResult> ManageStocks([FromBody] Products entity)
+        public async Task<IActionResult> ManageStocks([FromBody] ProductStocks entity)
         {
             try
             {

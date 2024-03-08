@@ -82,7 +82,7 @@ namespace store.server.Infrastructure.Data.Managers.Main
             return await _repo.DeleteImage(entity);
         }
 
-        public async Task<IEnumerable<ProductStocks>> ManageStocks(Products entity)
+        public async Task<IEnumerable<ProductStocks>> ManageStocks(ProductStocks entity)
         {
             return await _repo.ManageStocks(entity);
         }
