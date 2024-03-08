@@ -1,4 +1,5 @@
 ﻿using SkiaSharp;
+using System.IO;
 using store.server.Infrastructure.Models.Product;
 using store.server.Infrastructure.Data.Repo.Helpers;
 
@@ -123,7 +124,10 @@ namespace store.server.Helpers
                 if (File.Exists(imagePath))
                 {
                     File.Delete(imagePath);
-                    Directory.Delete(folderPath);
+                    if (Directory.GetFiles(folderPath).Length == 0)
+                    {
+                        Directory.Delete(folderPath, false);
+                    }
                     return true;
                 }
                 return false;
