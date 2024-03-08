@@ -26,6 +26,6 @@ namespace store.server.Infrastructure.Data.Interface.Main
         Task<ProductSpecifications> ManageSpecs(ProductSpecifications entity, int ProductID);
         Task<IEnumerable<ProductImages>> ManageImage(string path, int ProductID);
         Task<IEnumerable<ProductImages>> DeleteImage(ProductImages entity);
-        Task<IEnumerable<ProductStocks>> ManageStocks(List<ProductStocks> entity, int ProductID);
+        Task<IEnumerable<ProductStocks>> ManageStocks(Products entity);
     }
 }

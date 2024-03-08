@@ -1,5 +1,4 @@
 ﻿using SkiaSharp;
-using System.IO;
 using store.server.Infrastructure.Models.Product;
 using store.server.Infrastructure.Data.Repo.Helpers;
 

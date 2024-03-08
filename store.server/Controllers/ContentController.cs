@@ -99,6 +99,30 @@ namespace store.server.Controllers
         }
 
         [HttpPost]
+        [Route("manage/stocks")]
+        public async Task<IActionResult> ManageStocks([FromBody] Products entity)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        var result = await new ProductManager().ManageStocks(entity);
+                        return Ok(result);
+                    }
+                    return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpPost]
         [Route("delete/image")]
         public async Task<IActionResult> DeleteImage([FromBody] ProductImages entity)
         {

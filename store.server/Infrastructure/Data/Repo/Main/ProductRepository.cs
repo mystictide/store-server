@@ -93,6 +93,9 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 string iQuery = $@"
                 SELECT * FROM productimages t where t.productid = {ID};";
 
+                string stocksQuery = $@"
+                SELECT * FROM productstocks t where t.productid = {ID};";
+
                 using (var con = GetConnection)
                 {
                     if (ID > 0)
@@ -112,6 +115,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
                         res.FirstOrDefault().Specs = specs.FirstOrDefault();
                         res.FirstOrDefault().Colors = await con.QueryAsync<Colors>(cQuery);
                         res.FirstOrDefault().Images = await con.QueryAsync<ProductImages>(iQuery);
+                        res.FirstOrDefault().Stocks = await con.QueryAsync<ProductStocks>(stocksQuery);
                         return res.FirstOrDefault();
                     }
                     return null;
@@ -406,28 +410,28 @@ namespace store.server.Infrastructure.Data.Repo.Main
             }
         }
 
-        public async Task<IEnumerable<ProductStocks>> ManageStocks(List<ProductStocks> entity, int ProductID)
+        public async Task<IEnumerable<ProductStocks>> ManageStocks(Products entity)
         {
             try
             {
-                if (entity.Count > 0)
+                if (entity?.Stocks?.Count() > 0)
                 {
                     using (var connection = GetConnection)
                     {
-                        string deleteExisting = $@"DELETE from productstocks t where t.productid = {ProductID};";
+                        string deleteExisting = $@"DELETE from productstocks t where t.productid = {entity.ID};";
                         await connection.QueryAsync<ProductStocks>(deleteExisting);
-                        foreach (var item in entity)
+                        foreach (var item in entity.Stocks)
                         {
                             string query = $@"
                             INSERT INTO productstocks (id, productid, colorid, amount)
-	 	                    VALUES (default, {ProductID}, {item.ColorID}, {item.Amount})
+	 	                    VALUES (default, {entity.ID}, {item.ColorID}, {item.Amount})
                             RETURNING *;";
                             await connection.QueryAsync<ProductStocks>(query);
                         }
-                        return entity;
+                        return entity.Stocks;
                     }
                 }
-                return entity;
+                return entity?.Stocks;
             }
             catch (Exception ex)
             {
