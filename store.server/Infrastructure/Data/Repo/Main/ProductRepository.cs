@@ -90,6 +90,9 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 left join materials m on m.id = t.materialid
                 where t.productid = {ID};";
 
+                string iQuery = $@"
+                SELECT * FROM productimages t where t.productid = {ID};";
+
                 using (var con = GetConnection)
                 {
                     if (ID > 0)
@@ -108,6 +111,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
                         }, splitOn: "id");
                         res.FirstOrDefault().Specs = specs.FirstOrDefault();
                         res.FirstOrDefault().Colors = await con.QueryAsync<Colors>(cQuery);
+                        res.FirstOrDefault().Images = await con.QueryAsync<ProductImages>(iQuery);
                         return res.FirstOrDefault();
                     }
                     return null;
