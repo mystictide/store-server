@@ -8,28 +8,29 @@ using store.server.Infrastructure.Data.Managers.Main;
 namespace store.server.Controllers
 {
     [ApiController]
-    [Route("cms")]
-    public class ContentController : ControllerBase
+    [Route("cms/archive")]
+    public class ArchiveController : ControllerBase
     {
         private IWebHostEnvironment _env;
 
-        public ContentController(IWebHostEnvironment env)
+        public ArchiveController(IWebHostEnvironment env)
         {
             _env = env;
         }
 
         [HttpPost]
-        [Route("manage/product")]
-        public async Task<IActionResult> ManageProduct([FromBody] Products entity)
+        [Route("product")]
+        public async Task<IActionResult> ArchiveProduct([FromBody] Products entity)
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
+                    var product = await new ProductManager().Get(entity.ID.Value);
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().Manage(entity);
+                        var result = await new ProductManager().Archive(entity);
                         return Ok(result);
                     }
                     return StatusCode(401, "Access denied");
@@ -43,48 +44,18 @@ namespace store.server.Controllers
         }
 
         [HttpPost]
-        [Route("manage/image")]
-        public async Task<IActionResult> ManageImage([FromForm] IFormFile file)
+        [Route("category")]
+        public async Task<IActionResult> ArchiveCategory([FromBody] ProductCategories entity)
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
-                    if (file.Length > 0)
-                    {
-                        var path = await CustomHelpers.SaveImage(Int32.Parse(file.FileName), _env.ContentRootPath, file);
-                        if (path != null)
-                        {
-                            var result = await new ProductManager().ManageImage(path, Int32.Parse(file.FileName));
-                            return Ok(result);
-                        }
-                        else
-                        {
-                            return StatusCode(401, "Failed to save image");
-                        }
-                    }
-                    return StatusCode(401, "Failed to save image");
-                }
-                return StatusCode(401, "Authorization failed");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(401, ex.Message);
-            }
-        }
-
-        [HttpPost]
-        [Route("manage/stocks")]
-        public async Task<IActionResult> ManageStocks([FromBody] ProductStocks entity)
-        {
-            try
-            {
-                if (AuthHelpers.Authorize(HttpContext, 1))
-                {
+                    var product = await new ProductManager().GetCategory(entity.ID.Value);
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().ManageStocks(entity);
+                        var result = await new ProductManager().ArchiveCategory(entity);
                         return Ok(result);
                     }
                     return StatusCode(401, "Access denied");
@@ -98,17 +69,18 @@ namespace store.server.Controllers
         }
 
         [HttpPost]
-        [Route("manage/category")]
-        public async Task<IActionResult> ManageCategory([FromBody] ProductCategories entity)
+        [Route("brand")]
+        public async Task<IActionResult> ArchiveBrand([FromBody] Brands entity)
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
+                    var product = await new ProductManager().GetBrand(entity.ID);
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().ManageCategory(entity);
+                        var result = await new ProductManager().ArchiveBrand(entity);
                         return Ok(result);
                     }
                     return StatusCode(401, "Access denied");
@@ -122,17 +94,18 @@ namespace store.server.Controllers
         }
 
         [HttpPost]
-        [Route("manage/brand")]
-        public async Task<IActionResult> ManageBrand([FromBody] Brands entity)
+        [Route("material")]
+        public async Task<IActionResult> ArchiveMaterial([FromBody] Materials entity)
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
+                    var product = await new ProductManager().GetMaterial(entity.ID);
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        var result = await new ProductManager().ManageBrand(entity);
+                        var result = await new ProductManager().ArchiveMaterial(entity);
                         return Ok(result);
                     }
                     return StatusCode(401, "Access denied");
@@ -146,20 +119,23 @@ namespace store.server.Controllers
         }
 
         [HttpPost]
-        [Route("manage/material")]
-        public async Task<IActionResult> ManageMaterial([FromBody] Materials entity)
+        [Route("image")]
+        public async Task<IActionResult> DeleteImage([FromBody] ProductImages entity)
         {
             try
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
-                    var admin = AuthHelpers.CurrentUserID(HttpContext);
-                    if (admin > 0)
+                    var res = await CustomHelpers.DeleteImage(entity, _env.ContentRootPath);
+                    if (res)
                     {
-                        var result = await new ProductManager().ManageMaterial(entity);
+                        var result = await new ProductManager().DeleteImage(entity);
                         return Ok(result);
                     }
-                    return StatusCode(401, "Access denied");
+                    else
+                    {
+                        return StatusCode(401, "Failed to delete image");
+                    }
                 }
                 return StatusCode(401, "Authorization failed");
             }
