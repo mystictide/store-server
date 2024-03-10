@@ -98,6 +98,30 @@ namespace store.server.Controllers
         }
 
         [HttpPost]
+        [Route("manage/pricing")]
+        public async Task<IActionResult> ManagePricing([FromBody] ProductPricing entity)
+        {
+            try
+            {
+                if (AuthHelpers.Authorize(HttpContext, 1))
+                {
+                    var admin = AuthHelpers.CurrentUserID(HttpContext);
+                    if (admin > 0)
+                    {
+                        var result = await new ProductManager().ManagePricing(entity);
+                        return Ok(result);
+                    }
+                    return StatusCode(401, "Access denied");
+                }
+                return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpPost]
         [Route("manage/category")]
         public async Task<IActionResult> ManageCategory([FromBody] ProductCategories entity)
         {
