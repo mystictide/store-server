@@ -97,6 +97,9 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 string stocksQuery = $@"
                 SELECT * FROM productstocks t where t.productid = {ID};";
 
+                string pricesQuery = $@"
+                SELECT * FROM productpricing t where t.productid = {ID};";
+
                 using (var con = GetConnection)
                 {
                     if (ID > 0)
@@ -117,6 +120,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
                         res.FirstOrDefault().Colors = await con.QueryAsync<Colors>(cQuery);
                         res.FirstOrDefault().Images = await con.QueryAsync<ProductImages>(iQuery);
                         res.FirstOrDefault().Stocks = await con.QueryAsync<ProductStocks>(stocksQuery);
+                        res.FirstOrDefault().Prices = await con.QueryAsync<ProductPricing>(stocksQuery);
                         return res.FirstOrDefault();
                     }
                     return null;
