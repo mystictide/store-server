@@ -273,11 +273,16 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 string query = $@"
                 SELECT *
                 FROM productcategories t
+                left join productcategories pc on pc.id = t.parentid
                 WHERE t.isactive = true;";
 
                 using (var con = GetConnection)
                 {
-                    var res = await con.QueryAsync<ProductCategories>(query);
+                    var res = await con.QueryAsync<ProductCategories, ProductCategories, ProductCategories>(query, (i, u) =>
+                    {
+                        i.Parent = u ?? new ProductCategories();
+                        return i;
+                    }, splitOn: "id");
                     return res;
                 }
             }
