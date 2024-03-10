@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using static Dapper.SqlMapper;
 using store.server.Infrastructure.Models.Main;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Models.Helpers;
@@ -39,13 +38,19 @@ namespace store.server.Infrastructure.Data.Repo.Main
             try
             {
                 var filterModel = new Products();
+                string category = filter.Category > 0 ? $"t.categoryid = {filter.Category}" : "t.categoryid notnull";
+                string brand = filter.Brand > 0 ? $"= {filter.Brand}" : "notnull";
+                string material = filter.Material > 0 ? $"= {filter.Material}" : "notnull";
+                string PriceRangeMax = filter.PriceRangeMax > 0 ? $"< {filter.PriceRangeMax}" : "notnull";
+
                 FilteredList<Products> request = new FilteredList<Products>()
                 {
                     filter = filter,
                     filterModel = filterModel,
                 };
                 FilteredList<Products> result = new FilteredList<Products>();
-                string WhereClause = $@"WHERE t.name ilike '%{filter.Keyword}%' and t.isactive = {filter.IsActive}";
+                string WhereClause = $@"WHERE t.name ilike '%{filter.Keyword}%' and t.isactive = {filter.IsActive} and {category} and t.id in (select productid from productspecifications ps where ps.brandid {brand}) and t.id in (select productid from productspecifications ps where ps.materialid {material}) and t.id in (select productid from productpricing pp where pp.amount > {filter.PriceRangeMin} and pp.amount {PriceRangeMax})";
+
                 string query_count = $@"Select Count(t.id) from products t {WhereClause}";
 
                 using (var con = GetConnection)

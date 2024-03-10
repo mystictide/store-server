@@ -86,17 +86,8 @@ namespace store.server.Controllers
         {
             try
             {
-                if (AuthHelpers.Authorize(HttpContext, 1))
-                {
-                    var categories = await new ProductManager().GetCategories();
-                    var admin = AuthHelpers.CurrentUserID(HttpContext);
-                    if (admin > 0)
-                    {
-                        return Ok(categories);
-                    }
-                    return StatusCode(401, "Access denied");
-                }
-                return StatusCode(401, "Authorization failed");
+                var categories = await new ProductManager().GetCategories();
+                return Ok(categories);
             }
             catch (Exception ex)
             {
@@ -110,17 +101,8 @@ namespace store.server.Controllers
         {
             try
             {
-                if (AuthHelpers.Authorize(HttpContext, 1))
-                {
-                    var brands = await new ProductManager().GetBrands();
-                    var admin = AuthHelpers.CurrentUserID(HttpContext);
-                    if (admin > 0)
-                    {
-                        return Ok(brands);
-                    }
-                    return StatusCode(401, "Access denied");
-                }
-                return StatusCode(401, "Authorization failed");
+                var brands = await new ProductManager().GetBrands();
+                return Ok(brands);
             }
             catch (Exception ex)
             {
