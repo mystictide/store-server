@@ -15,18 +15,8 @@ namespace store.server.Controllers
         {
             try
             {
-                if (AuthHelpers.Authorize(HttpContext, 1))
-                {
-                    var admin = AuthHelpers.CurrentUserID(HttpContext);
-                    if (admin > 0)
-                    {
-                        var result = await new ProductManager().FilteredList(filter);
-                        return Ok(result);
-                    }
-                    return StatusCode(401, "Access denied");
-
-                }
-                return StatusCode(401, "Authorization failed");
+                var result = await new ProductManager().FilteredList(filter);
+                return Ok(result);
             }
             catch (Exception ex)
             {
