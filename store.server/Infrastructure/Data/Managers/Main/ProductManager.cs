@@ -87,6 +87,11 @@ namespace store.server.Infrastructure.Data.Managers.Main
             return await _repo.ManageStocks(entity);
         }
 
+        public async Task<IEnumerable<ProductPricing>> ManagePricing(ProductPricing entity)
+        {
+            return await _repo.ManagePricing(entity);
+        }
+
         public async Task<bool> ArchiveBrand(Brands entity)
         {
             return await _repo.ArchiveBrand(entity);

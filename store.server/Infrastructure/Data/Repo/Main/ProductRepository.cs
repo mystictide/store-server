@@ -421,7 +421,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 INSERT INTO productstocks (id, productid, colorid, amount)
 	 	        VALUES ({identity}, {entity.ProductID}, {entity.ColorID}, {entity.Amount})
                 ON CONFLICT (id) DO UPDATE SET amount = '{entity.Amount}';
-                Select * from productimages t where t.productid = {entity.ProductID};";
+                Select * from productstocks t where t.productid = {entity.ProductID};";
 
                 using (var connection = GetConnection)
                 {
@@ -436,6 +436,29 @@ namespace store.server.Infrastructure.Data.Repo.Main
             }
         }
 
+        public async Task<IEnumerable<ProductPricing>> ManagePricing(ProductPricing entity)
+        {
+            try
+            {
+                dynamic identity = entity.ID > 0 ? entity.ID : "default";
+                string query = $@"
+                INSERT INTO productpricing (id, productid, colorid, amount)
+	 	        VALUES ({identity}, {entity.ProductID}, {entity.ColorID}, {entity.Amount})
+                ON CONFLICT (id) DO UPDATE SET amount = '{entity.Amount}';
+                Select * from productpricing t where t.productid = {entity.ProductID};";
+
+                using (var connection = GetConnection)
+                {
+                    var result = await connection.QueryAsync<ProductPricing>(query);
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
         public async Task<bool> ArchiveBrand(Brands entity)
         {
             try
