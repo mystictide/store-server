@@ -2,10 +2,12 @@
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using store.server.Infrastructure.Models.CMS;
 using store.server.Infrasructure.Models.Users;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Models.Helpers;
 using store.server.Infrastructure.Data.Repo.Main;
+using store.server.Infrastructure.Data.Managers.Auth;
 using store.server.Infrastructure.Data.Interface.Main;
 
 namespace store.server.Infrastructure.Data.Managers.Main
@@ -16,29 +18,6 @@ namespace store.server.Infrastructure.Data.Managers.Main
         public UserManager()
         {
             _repo = new UserRepository();
-        }
-
-        private string generateToken(int ID)
-        {
-            try
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(GetSecret());
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity(new[] {
-                    new Claim("id", ID.ToString()),
-                }),
-                    Expires = DateTime.UtcNow.AddDays(10),
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                };
-                var token = tokenHandler.CreateToken(tokenDescriptor);
-                return tokenHandler.WriteToken(token);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
         }
 
         public async Task<bool> CheckEmail(string Email, int? ID)
@@ -67,10 +46,14 @@ namespace store.server.Infrastructure.Data.Managers.Main
             if (result != null)
             {
                 var user = new Users();
-                user.Email = entity.Email;
-                user.FirstName = entity.FirstName;
-                user.LastName = entity.LastName;
-                user.Token = generateToken(result.ID.Value);
+                user.ID = result.ID;
+                user.Email = result.Email;
+                user.FirstName = result.FirstName;
+                user.LastName = result.LastName;
+                user.AccessToken = new TokenManager().GenerateToken(result.ID.Value, 1);
+                user.RefreshToken = new TokenManager().GenerateToken(result.ID.Value, 90);
+                var tokenEntity = new Tokens { UserID = user.ID.Value, Token = user.RefreshToken, ExpiryDate = DateTime.Now.AddDays(90) };
+                await new TokenManager().SaveToken(false, tokenEntity);
                 return user;
             }
             throw new Exception("Server error.");
@@ -92,7 +75,10 @@ namespace store.server.Infrastructure.Data.Managers.Main
                 user.Email = result.Email;
                 user.FirstName = result.FirstName;
                 user.LastName = result.LastName;
-                user.Token = generateToken(result.ID.Value);
+                user.AccessToken = new TokenManager().GenerateToken(result.ID.Value, 1);
+                user.RefreshToken = new TokenManager().GenerateToken(result.ID.Value, 90);
+                var tokenEntity = new Tokens { UserID = user.ID.Value, Token = user.RefreshToken, ExpiryDate = DateTime.Now.AddDays(90) };
+                await new TokenManager().SaveToken(false, tokenEntity);
                 return user;
             }
 
