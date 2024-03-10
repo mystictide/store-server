@@ -120,7 +120,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
                         res.FirstOrDefault().Colors = await con.QueryAsync<Colors>(cQuery);
                         res.FirstOrDefault().Images = await con.QueryAsync<ProductImages>(iQuery);
                         res.FirstOrDefault().Stocks = await con.QueryAsync<ProductStocks>(stocksQuery);
-                        res.FirstOrDefault().Prices = await con.QueryAsync<ProductPricing>(stocksQuery);
+                        res.FirstOrDefault().Prices = await con.QueryAsync<ProductPricing>(pricesQuery);
                         return res.FirstOrDefault();
                     }
                     return null;
