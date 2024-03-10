@@ -89,10 +89,10 @@ namespace store.server.Infrastructure.Data.Managers.Auth
             }
             else
             {
-                var admin = new UserReturn();
-                admin.AccessToken = GenerateToken(existing.UserID, 1);
-                admin.RefreshToken = existing.Token;
-                return admin;
+                var user = new UserReturn();
+                user.AccessToken = GenerateToken(existing.UserID, 1);
+                user.RefreshToken = existing.Token;
+                return user;
             }
         }
     }
