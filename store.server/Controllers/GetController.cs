@@ -183,6 +183,21 @@ namespace store.server.Controllers
         }
 
         [HttpGet]
+        [Route("landing/products")]
+        public async Task<IActionResult> GetProductsByMainCategory()
+        {
+            try
+            {
+                var products = await new ProductManager().GetProductsByMainCategory();
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpGet]
         [Route("customer")]
         public async Task<IActionResult> GetCustomer([FromQuery] int ID)
         {
