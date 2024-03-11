@@ -1,8 +1,10 @@
-﻿using store.server.Infrastructure.Models.Main;
+﻿using static Dapper.SqlMapper;
+using store.server.Infrastructure.Models.Main;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Data.Repo.Main;
 using store.server.Infrastructure.Models.Helpers;
 using store.server.Infrastructure.Models.Product;
+using store.server.Infrastructure.Models.Returns;
 using store.server.Infrastructure.Data.Interface.Main;
 
 namespace store.server.Infrastructure.Data.Managers.Main
@@ -144,6 +146,11 @@ namespace store.server.Infrastructure.Data.Managers.Main
         public async Task<FilteredList<Materials>?> FilteredMaterials(Filter filter)
         {
             return await _repo.FilteredMaterials(filter);
+        }
+
+        public async Task<LandingProducts> GetProductsByMainCategory()
+        {
+            return await _repo.GetProductsByMainCategory();
         }
     }
 }

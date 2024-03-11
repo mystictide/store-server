@@ -3,6 +3,7 @@ using store.server.Infrastructure.Models.Main;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Models.Helpers;
 using store.server.Infrastructure.Models.Product;
+using store.server.Infrastructure.Models.Returns;
 using store.server.Infrastructure.Data.Repo.Helpers;
 using store.server.Infrastructure.Data.Interface.Main;
 
@@ -759,6 +760,47 @@ namespace store.server.Infrastructure.Data.Repo.Main
                     result.filter = request.filter;
                     result.filterModel = request.filterModel;
                     return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<LandingProducts> GetProductsByMainCategory()
+        {
+            try
+            {
+                string livingRoom = $@"
+                SELECT *
+                FROM products t
+                WHERE t.categoryid in (select id from productcategories p where parentid = 1);";
+
+                string kitchen = $@"
+                SELECT *
+                FROM products t
+                WHERE t.categoryid in (select id from productcategories p where parentid = 2);";
+
+                string bedroom = $@"
+                SELECT *
+                FROM products t
+                WHERE t.categoryid in (select id from productcategories p where parentid = 3);";
+
+                string diningRoom = $@"
+                SELECT *
+                FROM products t
+                WHERE t.categoryid in (select id from productcategories p where parentid = 3);";
+
+                using (var con = GetConnection)
+                {
+                    var landing = new LandingProducts();
+                    landing.LivingRoom = await con.QueryAsync<Products>(livingRoom);
+                    landing.Kitchen = await con.QueryAsync<Products>(kitchen);
+                    landing.Bedroom = await con.QueryAsync<Products>(bedroom);
+                    landing.DiningRoom = await con.QueryAsync<Products>(diningRoom);
+                    return landing;
                 }
             }
             catch (Exception ex)
