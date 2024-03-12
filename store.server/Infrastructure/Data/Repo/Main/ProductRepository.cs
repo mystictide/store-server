@@ -774,24 +774,20 @@ namespace store.server.Infrastructure.Data.Repo.Main
             try
             {
                 string livingRoom = $@"
-                SELECT *
-                FROM products t
-                WHERE t.categoryid in (select id from productcategories p where parentid = 1);";
+                SELECT t.*, (select source from productimages p2 where p2.productid = t.id limit 1) as image FROM products t
+                WHERE t.categoryid in (select id from productcategories p where parentid = 1) order by t.id desc limit 16;";
 
                 string kitchen = $@"
-                SELECT *
-                FROM products t
-                WHERE t.categoryid in (select id from productcategories p where parentid = 2);";
+                SELECT t.*, (select source from productimages p2 where p2.productid = t.id limit 1) as image FROM products t
+                WHERE t.categoryid in (select id from productcategories p where parentid = 2) order by t.id desc limit 16;";
 
                 string bedroom = $@"
-                SELECT *
-                FROM products t
-                WHERE t.categoryid in (select id from productcategories p where parentid = 3);";
+                SELECT t.*, (select source from productimages p2 where p2.productid = t.id limit 1) as image FROM products t
+                WHERE t.categoryid in (select id from productcategories p where parentid = 3) order by t.id desc limit 16;";
 
                 string diningRoom = $@"
-                SELECT *
-                FROM products t
-                WHERE t.categoryid in (select id from productcategories p where parentid = 3);";
+                SELECT t.*, (select source from productimages p2 where p2.productid = t.id limit 1) as image FROM products t
+                WHERE t.categoryid in (select id from productcategories p where parentid = 3) order by t.id desc limit 16;";
 
                 using (var con = GetConnection)
                 {
