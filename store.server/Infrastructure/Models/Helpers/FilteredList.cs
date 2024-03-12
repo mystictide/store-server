@@ -13,9 +13,9 @@
         {
             ID = 0;
             Keyword = "";
-            Brand = 0;
-            Material = 0;
-            Category = 0;
+            Brand = "";
+            Material = "";
+            Category = "";
             PriceRangeMin = 0;
             PriceRangeMax = 0;
             pageSize = 14;
@@ -25,9 +25,9 @@
         }
         public int? ID { get; set; }
         public string? Keyword { get; set; }
-        public int? Brand { get; set; }
-        public int? Material { get; set; }
-        public int? Category { get; set; }
+        public string? Brand { get; set; }
+        public string? Material { get; set; }
+        public string? Category { get; set; }
         public int? PriceRangeMin { get; set; }
         public int? PriceRangeMax { get; set; }
         public string? SortBy { get; set; }

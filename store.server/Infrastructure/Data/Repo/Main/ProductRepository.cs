@@ -39,9 +39,9 @@ namespace store.server.Infrastructure.Data.Repo.Main
             try
             {
                 var filterModel = new Products();
-                string category = filter.Category > 0 ? $"t.categoryid = {filter.Category}" : "t.categoryid notnull";
-                string brand = filter.Brand > 0 ? $"= {filter.Brand}" : "notnull";
-                string material = filter.Material > 0 ? $"= {filter.Material}" : "notnull";
+                string category = $@"t.categoryid in (select id from productcategories p where p.name ilike '%{filter.Category}%')";
+                string brand = $@"t.id in (select productid from productspecifications ps where ps.brandid in (select id from brands b where b.name ilike '%{filter.Brand}%'))";
+                string material = $@"t.id in (select productid from productspecifications ps where ps.materialid in (select id from materials b where b.name ilike '%{filter.Material}%'))";
                 string PriceRangeMax = filter.PriceRangeMax > 0 ? $"< {filter.PriceRangeMax}" : "notnull";
 
                 FilteredList<Products> request = new FilteredList<Products>()
@@ -50,7 +50,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
                     filterModel = filterModel,
                 };
                 FilteredList<Products> result = new FilteredList<Products>();
-                string WhereClause = $@"WHERE t.name ilike '%{filter.Keyword}%' and t.isactive = {filter.IsActive} and {category} and t.id in (select productid from productspecifications ps where ps.brandid {brand}) and t.id in (select productid from productspecifications ps where ps.materialid {material}) and t.id in (select productid from productpricing pp where pp.amount > {filter.PriceRangeMin} and pp.amount {PriceRangeMax})";
+                string WhereClause = $@"WHERE t.name ilike '%{filter.Keyword}%' and t.isactive = {filter.IsActive} and {category} and {brand} and {material} and t.id in (select productid from productpricing pp where pp.amount > {filter.PriceRangeMin} and pp.amount {PriceRangeMax})";
 
                 string query_count = $@"Select Count(t.id) from products t {WhereClause}";
 
