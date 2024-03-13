@@ -9,6 +9,7 @@ namespace store.server.Infrastructure.Models.Main
         public string? Description { get; set; }
         public ProductCategories? Category { get; set; }
         public string? Image { get; set; }
+        public decimal? Price { get; set; }
         public IEnumerable<ProductImages>? Images { get; set; }
         public IEnumerable<Colors>? Colors { get; set; }
         public IEnumerable<ProductStocks>? Stocks { get; set; }
