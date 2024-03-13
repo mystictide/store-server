@@ -59,14 +59,20 @@ namespace store.server.Infrastructure.Data.Repo.Main
                     result.totalItems = await con.QueryFirstOrDefaultAsync<int>(query_count);
                     request.filter.pager = new Page(result.totalItems, request.filter.pageSize, request.filter.page);
                     string query = $@"
-                    SELECT t.*,
-                    (select source from productimages p2 where p2.productid = t.id limit 1) as image
+                    SELECT t.*, p2.*,
+                    (select source from productimages p2 where p2.productid = t.id limit 1) as image,
+                    (select amount from productpricing p2 where p2.productid = t.id limit 1) as price
                     FROM products t
+                    left join productcategories p2 on p2.id = t.categoryid
                     {WhereClause}
                     order by t.id {request.filter.SortBy}
                     OFFSET {request.filter.pager.StartIndex} ROWS
                     FETCH NEXT {request.filter.pageSize} ROWS ONLY";
-                    result.data = await con.QueryAsync<Products>(query);
+                    result.data = await con.QueryAsync<Products, ProductCategories, Products>(query, (i, c) =>
+                    {
+                        i.Category = c ?? new ProductCategories(); 
+                        return i;
+                    }, splitOn: "id");
                     result.filter = request.filter;
                     result.filterModel = request.filterModel;
                     return result;
