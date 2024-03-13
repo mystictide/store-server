@@ -44,19 +44,19 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 string brands = "'%%'";
                 string materials = "'%%'";
                 string colors = "'%%'";
-                if (filter.Categories.Count > 0)
+                if (filter.Categories?.Count > 0)
                 {
                     categories = CustomHelpers.SeralizeFilterCategories(filter.Categories);
                 }
-                if (filter.Brands.Count > 0)
+                if (filter.Brands?.Count > 0)
                 {
                     brands = CustomHelpers.SeralizeFilterBrands(filter.Brands);
                 }
-                if (filter.Materials.Count > 0)
+                if (filter.Materials?.Count > 0)
                 {
                     materials = CustomHelpers.SeralizeFilterMaterials(filter.Materials);
                 }
-                if (filter.Colors.Count > 0)
+                if (filter.Colors?.Count > 0)
                 {
                     colors = CustomHelpers.SeralizeFilterColors(filter.Colors);
                 }
