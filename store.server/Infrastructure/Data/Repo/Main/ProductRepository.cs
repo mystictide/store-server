@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using store.server.Helpers;
 using store.server.Infrastructure.Models.Main;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Models.Helpers;
@@ -39,9 +40,30 @@ namespace store.server.Infrastructure.Data.Repo.Main
             try
             {
                 var filterModel = new Products();
-                string category = $@"t.categoryid in (select id from productcategories p where p.name ilike '%{filter.Category}%')";
-                string brand = $@"t.id in (select productid from productspecifications ps where ps.brandid in (select id from brands b where b.name ilike '%{filter.Brand}%'))";
-                string material = $@"t.id in (select productid from productspecifications ps where ps.materialid in (select id from materials b where b.name ilike '%{filter.Material}%'))";
+                string categories = "'%%'";
+                string brands = "'%%'";
+                string materials = "'%%'";
+                string colors = "'%%'";
+                if (filter.Categories.Count > 0)
+                {
+                    categories = CustomHelpers.SeralizeFilterCategories(filter.Categories);
+                }
+                if (filter.Brands.Count > 0)
+                {
+                    brands = CustomHelpers.SeralizeFilterBrands(filter.Brands);
+                }
+                if (filter.Materials.Count > 0)
+                {
+                    materials = CustomHelpers.SeralizeFilterMaterials(filter.Materials);
+                }
+                if (filter.Colors.Count > 0)
+                {
+                    colors = CustomHelpers.SeralizeFilterColors(filter.Colors);
+                }
+                string category = $@"t.categoryid in (select id from productcategories p where p.name ilike ANY(ARRAY[{categories}]))";
+                string brand = $@"t.id in (select productid from productspecifications ps where ps.brandid in (select id from brands b where b.name ilike ANY(ARRAY[{brands}])))";
+                string material = $@"t.id in (select productid from productspecifications ps where ps.materialid in (select id from materials b where b.name ilike ANY(ARRAY[{materials}])))";
+                string color = $@"t.id in (select productid from productcolors ps where ps.colorid in (select id from colors b where b.name ilike ANY(ARRAY[{colors}])))";
                 string PriceRangeMax = filter.PriceRangeMax > 0 ? $"< {filter.PriceRangeMax}" : "notnull";
 
                 FilteredList<Products> request = new FilteredList<Products>()
@@ -50,7 +72,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
                     filterModel = filterModel,
                 };
                 FilteredList<Products> result = new FilteredList<Products>();
-                string WhereClause = $@"WHERE t.name ilike '%{filter.Keyword}%' and t.isactive = {filter.IsActive} and {category} and {brand} and {material} and t.id in (select productid from productpricing pp where pp.amount > {filter.PriceRangeMin} and pp.amount {PriceRangeMax})";
+                string WhereClause = $@"WHERE t.name ilike '%{filter.Keyword}%' and t.isactive = {filter.IsActive} and {category} and {brand} and {material} and {color} and t.id in (select productid from productpricing pp where pp.amount > {filter.PriceRangeMin} and pp.amount {PriceRangeMax})";
 
                 string query_count = $@"Select Count(t.id) from products t {WhereClause}";
 
