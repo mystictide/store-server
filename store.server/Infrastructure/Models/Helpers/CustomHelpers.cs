@@ -6,6 +6,62 @@ namespace store.server.Helpers
 {
     public class CustomHelpers
     {
+        public static string SeralizeFilterCategories(List<string> Categories)
+        {
+            string categories = "";
+            for (int i = 0; i < Categories.Count; i++)
+            {
+                categories += "'%" + Categories[i] + "%'";
+                if ((i + 1) != Categories.Count)
+                {
+                    categories += ",";
+                }
+            }
+            return categories;
+        }
+
+        public static string SeralizeFilterBrands(List<string> Brands)
+        {
+            string brands = "";
+            for (int i = 0; i < Brands.Count; i++)
+            {
+                brands += "'%" + Brands[i] + "%'";
+                if ((i + 1) != Brands.Count)
+                {
+                    brands += ",";
+                }
+            }
+            return brands;
+        }
+
+        public static string SeralizeFilterMaterials(List<string> Materials)
+        {
+            string materials = "";
+            for (int i = 0; i < Materials.Count; i++)
+            {
+                materials += "'%" + Materials[i] + "%'";
+                if ((i + 1) != Materials.Count)
+                {
+                    materials += ",";
+                }
+            }
+            return materials;
+        }
+
+        public static string SeralizeFilterColors(List<string> Colors)
+        {
+            string colors = "";
+            for (int i = 0; i < Colors.Count; i++)
+            {
+                colors += "'%" + Colors[i] + "%'";
+                if ((i + 1) != Colors.Count)
+                {
+                    colors += ",";
+                }
+            }
+            return colors;
+        }
+
         public static async Task<byte[]> ResizeImage(IFormFile file, int width, int height)
         {
             using (var stream = new MemoryStream())
