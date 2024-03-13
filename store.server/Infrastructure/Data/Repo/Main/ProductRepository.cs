@@ -59,7 +59,8 @@ namespace store.server.Infrastructure.Data.Repo.Main
                     result.totalItems = await con.QueryFirstOrDefaultAsync<int>(query_count);
                     request.filter.pager = new Page(result.totalItems, request.filter.pageSize, request.filter.page);
                     string query = $@"
-                    SELECT *
+                    SELECT t.*,
+                    (select source from productimages p2 where p2.productid = t.id limit 1) as image
                     FROM products t
                     {WhereClause}
                     order by t.id {request.filter.SortBy}
