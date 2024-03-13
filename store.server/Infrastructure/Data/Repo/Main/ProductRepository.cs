@@ -61,18 +61,14 @@ namespace store.server.Infrastructure.Data.Repo.Main
                     string query = $@"
                     SELECT t.*, p2.*,
                     (select source from productimages p2 where p2.productid = t.id limit 1) as image,
-                    (select amount from productpricing p2 where p2.productid = t.id limit 1) as price
+                    (select amount from productpricing p2 where p2.productid = t.id limit 1) as price,
+                    (select name from productcategories p2 where p2.id = t.categoryid) as categoryname
                     FROM products t
-                    left join productcategories p2 on p2.id = t.categoryid
                     {WhereClause}
                     order by t.id {request.filter.SortBy}
                     OFFSET {request.filter.pager.StartIndex} ROWS
                     FETCH NEXT {request.filter.pageSize} ROWS ONLY";
-                    result.data = await con.QueryAsync<Products, ProductCategories, Products>(query, (i, c) =>
-                    {
-                        i.Category = c ?? new ProductCategories(); 
-                        return i;
-                    }, splitOn: "id");
+                    result.data = await con.QueryAsync<Products>(query);
                     result.filter = request.filter;
                     result.filterModel = request.filterModel;
                     return result;
