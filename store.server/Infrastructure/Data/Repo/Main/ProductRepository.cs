@@ -59,7 +59,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
                     result.totalItems = await con.QueryFirstOrDefaultAsync<int>(query_count);
                     request.filter.pager = new Page(result.totalItems, request.filter.pageSize, request.filter.page);
                     string query = $@"
-                    SELECT *
+                    SELECT *,
                     (select source from productimages p2 where p2.productid = t.id limit 1) as image,
                     (select amount from productpricing p2 where p2.productid = t.id limit 1) as price,
                     (select name from productcategories p2 where p2.id = t.categoryid) as categoryname
