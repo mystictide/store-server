@@ -118,17 +118,17 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 }
                 string query = $@"
                 SELECT * FROM products t
-                left join productcategories pc on pc.id = t.categoryid
                 {WhereClause};";
 
                 using (var con = GetConnection)
                 {
-                    var res = await con.QueryAsync<Products, ProductCategories, Products>(query, (i, c) =>
-                    {
-                        i.Category = c ?? new ProductCategories();
-                        i.Specs = new ProductSpecifications();
-                        return i;
-                    }, splitOn: "id");
+                    var res = await con.QueryAsync<Products>(query);
+                    res.FirstOrDefault().Specs = new ProductSpecifications();
+
+                    string categoryQuery = $@"
+                   SELECT * FROM productcategories t
+                   left join productcategories pc on pc.id = t.parentid
+                   where t.id in (select categoryid from products p where p.id = {res.FirstOrDefault()?.ID});";
 
                     string cQuery = $@"
                     SELECT * FROM colors t
@@ -155,6 +155,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
                         i.Material = m ?? new Materials();
                         return i;
                     }, splitOn: "id");
+                    res.FirstOrDefault().Category = await con.QueryFirstOrDefaultAsync<ProductCategories>(categoryQuery);
                     res.FirstOrDefault().Specs = specs.FirstOrDefault();
                     res.FirstOrDefault().Colors = await con.QueryAsync<Colors>(cQuery);
                     res.FirstOrDefault().Images = await con.QueryAsync<ProductImages>(iQuery);
