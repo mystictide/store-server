@@ -1,5 +1,4 @@
-﻿using static Dapper.SqlMapper;
-using store.server.Infrastructure.Models.Main;
+﻿using store.server.Infrastructure.Models.Main;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Data.Repo.Main;
 using store.server.Infrastructure.Models.Helpers;
@@ -26,9 +25,9 @@ namespace store.server.Infrastructure.Data.Managers.Main
             return await _repo.FilteredList(filter); ;
         }
 
-        public async Task<Products?> Get(int ID)
+        public async Task<Products?> Get(int? ID, string? Name)
         {
-            return await _repo.Get(ID);
+            return await _repo.Get(ID, Name);
         }
 
         public async Task<Products?> Manage(Products entity)
