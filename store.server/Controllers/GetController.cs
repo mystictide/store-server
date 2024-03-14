@@ -142,21 +142,12 @@ namespace store.server.Controllers
 
         [HttpGet]
         [Route("product")]
-        public async Task<IActionResult> GetProduct([FromQuery] int ID)
+        public async Task<IActionResult> GetProduct([FromQuery] int? ID, [FromQuery] string? Name)
         {
             try
             {
-                if (AuthHelpers.Authorize(HttpContext, 1))
-                {
-                    var product = await new ProductManager().Get(ID);
-                    var admin = AuthHelpers.CurrentUserID(HttpContext);
-                    if (admin > 0)
-                    {
-                        return Ok(product);
-                    }
-                    return StatusCode(401, "Access denied");
-                }
-                return StatusCode(401, "Authorization failed");
+                var product = await new ProductManager().Get(ID, Name);
+                return Ok(product);
             }
             catch (Exception ex)
             {

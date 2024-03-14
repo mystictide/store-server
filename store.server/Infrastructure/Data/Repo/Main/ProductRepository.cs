@@ -103,14 +103,23 @@ namespace store.server.Infrastructure.Data.Repo.Main
             }
         }
 
-        public async Task<Products?> Get(int ID)
+        public async Task<Products?> Get(int? ID, string? Name)
         {
             try
             {
+                string WhereClause;
+                if (Name != null)
+                {
+                    WhereClause = $" WHERE t.id = {ID ?? 0} AND (t.title ilike '{Name}')";
+                }
+                else
+                {
+                    WhereClause = $" WHERE t.id = {ID ?? 0}";
+                }
                 string query = $@"
                 SELECT * FROM products t
                 left join productcategories pc on pc.id = t.categoryid
-                WHERE t.id = {ID};";
+                {WhereClause};";
 
                 string cQuery = $@"
                 SELECT * FROM colors t
