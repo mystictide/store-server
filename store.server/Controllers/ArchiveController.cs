@@ -26,7 +26,7 @@ namespace store.server.Controllers
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
-                    var product = await new ProductManager().Get(entity.ID.Value);
+                    var product = await new ProductManager().Get(entity.ID.Value, null);
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
