@@ -110,7 +110,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 string WhereClause;
                 if (Name != null)
                 {
-                    WhereClause = $" WHERE t.id = {ID ?? 0} AND (t.title ilike '{Name}')";
+                    WhereClause = $" WHERE t.id notnull AND (t.name ilike '%{Name}%')";
                 }
                 else
                 {
@@ -121,49 +121,46 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 left join productcategories pc on pc.id = t.categoryid
                 {WhereClause};";
 
-                string cQuery = $@"
-                SELECT * FROM colors t
-                where t.id in (select colorid from productcolors p where p.productid = {ID});";
-
-                string sQuery = $@"
-                SELECT * FROM productspecifications t
-                left join brands b on b.id = t.brandid
-                left join materials m on m.id = t.materialid
-                where t.productid = {ID};";
-
-                string iQuery = $@"
-                SELECT * FROM productimages t where t.productid = {ID};";
-
-                string stocksQuery = $@"
-                SELECT * FROM productstocks t where t.productid = {ID};";
-
-                string pricesQuery = $@"
-                SELECT * FROM productpricing t where t.productid = {ID};";
-
                 using (var con = GetConnection)
                 {
-                    if (ID > 0)
+                    var res = await con.QueryAsync<Products, ProductCategories, Products>(query, (i, c) =>
                     {
-                        var res = await con.QueryAsync<Products, ProductCategories, Products>(query, (i, c) =>
-                        {
-                            i.Category = c ?? new ProductCategories();
-                            i.Specs = new ProductSpecifications();
-                            return i;
-                        }, splitOn: "id");
-                        var specs = await con.QueryAsync<ProductSpecifications, Brands, Materials, ProductSpecifications>(sQuery, (i, b, m) =>
-                        {
-                            i.Brand = b ?? new Brands();
-                            i.Material = m ?? new Materials();
-                            return i;
-                        }, splitOn: "id");
-                        res.FirstOrDefault().Specs = specs.FirstOrDefault();
-                        res.FirstOrDefault().Colors = await con.QueryAsync<Colors>(cQuery);
-                        res.FirstOrDefault().Images = await con.QueryAsync<ProductImages>(iQuery);
-                        res.FirstOrDefault().Stocks = await con.QueryAsync<ProductStocks>(stocksQuery);
-                        res.FirstOrDefault().Prices = await con.QueryAsync<ProductPricing>(pricesQuery);
-                        return res.FirstOrDefault();
-                    }
-                    return null;
+                        i.Category = c ?? new ProductCategories();
+                        i.Specs = new ProductSpecifications();
+                        return i;
+                    }, splitOn: "id");
+
+                    string cQuery = $@"
+                    SELECT * FROM colors t
+                    where t.id in (select colorid from productcolors p where p.productid = {res.FirstOrDefault()?.ID});";
+
+                    string sQuery = $@"
+                    SELECT * FROM productspecifications t
+                    left join brands b on b.id = t.brandid
+                    left join materials m on m.id = t.materialid
+                    where t.productid = {res.FirstOrDefault()?.ID};";
+
+                    string iQuery = $@"
+                    SELECT * FROM productimages t where t.productid = {res.FirstOrDefault()?.ID};";
+
+                    string stocksQuery = $@"
+                    SELECT * FROM productstocks t where t.productid = {res.FirstOrDefault()?.ID};";
+
+                    string pricesQuery = $@"
+                    SELECT * FROM productpricing t where t.productid = {res.FirstOrDefault()?.ID};";
+
+                    var specs = await con.QueryAsync<ProductSpecifications, Brands, Materials, ProductSpecifications>(sQuery, (i, b, m) =>
+                    {
+                        i.Brand = b ?? new Brands();
+                        i.Material = m ?? new Materials();
+                        return i;
+                    }, splitOn: "id");
+                    res.FirstOrDefault().Specs = specs.FirstOrDefault();
+                    res.FirstOrDefault().Colors = await con.QueryAsync<Colors>(cQuery);
+                    res.FirstOrDefault().Images = await con.QueryAsync<ProductImages>(iQuery);
+                    res.FirstOrDefault().Stocks = await con.QueryAsync<ProductStocks>(stocksQuery);
+                    res.FirstOrDefault().Prices = await con.QueryAsync<ProductPricing>(pricesQuery);
+                    return res.FirstOrDefault();
                 }
             }
             catch (Exception ex)
