@@ -155,7 +155,12 @@ namespace store.server.Infrastructure.Data.Repo.Main
                         i.Material = m ?? new Materials();
                         return i;
                     }, splitOn: "id");
-                    res.FirstOrDefault().Category = await con.QueryFirstOrDefaultAsync<ProductCategories>(categoryQuery);
+                    var categories = await con.QueryAsync<ProductCategories, ProductCategories, ProductCategories>(categoryQuery, (i, c) =>
+                    {
+                        i.Parent = c ?? new ProductCategories();
+                        return i;
+                    }, splitOn: "id");
+                    res.FirstOrDefault().Category = categories.FirstOrDefault();
                     res.FirstOrDefault().Specs = specs.FirstOrDefault();
                     res.FirstOrDefault().Colors = await con.QueryAsync<Colors>(cQuery);
                     res.FirstOrDefault().Images = await con.QueryAsync<ProductImages>(iQuery);
