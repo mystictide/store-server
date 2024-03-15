@@ -1,9 +1,5 @@
-﻿using System.Text;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using store.server.Infrastructure.Models.CMS;
-using store.server.Infrasructure.Models.Users;
+﻿using store.server.Infrasructure.Models.Users;
+using store.server.Infrastructure.Models.Users;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Models.Helpers;
 using store.server.Infrastructure.Data.Repo.Main;
@@ -110,6 +106,11 @@ namespace store.server.Infrastructure.Data.Managers.Main
         public async Task<FilteredList<Users>?> FilteredList(Filter filter)
         {
             return await _repo.FilteredList(filter);
+        }
+
+        public async Task<IEnumerable<UserCart>?> ManageCart(UserCart entity)
+        {
+            return await _repo.ManageCart(entity);
         }
     }
 }

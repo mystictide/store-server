@@ -1,5 +1,7 @@
 ﻿using Dapper;
 using store.server.Infrasructure.Models.Users;
+using store.server.Infrastructure.Models.Main;
+using store.server.Infrastructure.Models.Users;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Models.Helpers;
 using store.server.Infrastructure.Data.Repo.Helpers;
@@ -195,6 +197,31 @@ namespace store.server.Infrastructure.Data.Repo.Main
                     result.filter = request.filter;
                     result.filterModel = request.filterModel;
                     return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<UserCart>?> ManageCart(UserCart entity)
+        {
+            try
+            {
+                dynamic identity = entity.ID > 0 ? entity.ID : "default";
+                string query = $@"
+                INSERT INTO usercart (id, userid, productid, colorid, amount)
+	 	        VALUES ({identity}, {entity.UserID}, {entity.ProductID}, {entity.ColorID}, {entity.Amount})
+                ON CONFLICT (id) DO UPDATE 
+                SET amount = {entity.Amount};
+                Select * from usercart t where t.userid = {entity.UserID};";
+
+                using (var connection = GetConnection)
+                {
+                    var res = await connection.QueryAsync<UserCart>(query);
+                    return res;
                 }
             }
             catch (Exception ex)
