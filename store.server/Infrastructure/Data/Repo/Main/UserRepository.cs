@@ -47,8 +47,8 @@ namespace store.server.Infrastructure.Data.Repo.Main
             try
             {
                 string query = $@"
-                INSERT INTO users (email, password)
-	                VALUES ('{entity.Email}', '{entity.Password}')
+                INSERT INTO users (firstname, lastname, email, password)
+	                VALUES ('{entity.FirstName}', '{entity.LastName}', '{entity.Email}', '{entity.Password}')
                 RETURNING *;";
 
                 using (var con = GetConnection)
