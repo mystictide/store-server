@@ -1,4 +1,5 @@
-﻿using store.server.Infrasructure.Models.Users;
+﻿using static Dapper.SqlMapper;
+using store.server.Infrasructure.Models.Users;
 using store.server.Infrastructure.Models.Users;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Models.Helpers;
@@ -111,6 +112,11 @@ namespace store.server.Infrastructure.Data.Managers.Main
         public async Task<IEnumerable<UserCart>?> ManageCart(UserCart entity)
         {
             return await _repo.ManageCart(entity);
+        }
+
+        public async Task<IEnumerable<UserCart>?> GetCart(int UserID)
+        {
+            return await _repo.GetCart(UserID);
         }
     }
 }

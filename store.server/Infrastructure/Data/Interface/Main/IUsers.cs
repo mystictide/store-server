@@ -14,5 +14,6 @@ namespace store.server.Infrastructure.Data.Interface.Main
         Task<string?> UpdateEmail(int ID, string Email);
         Task<FilteredList<Users>?> FilteredList(Filter filter);
         Task<IEnumerable<UserCart>?> ManageCart(UserCart entity);
+        Task<IEnumerable<UserCart>?> GetCart(int UserID);
     }
 }
