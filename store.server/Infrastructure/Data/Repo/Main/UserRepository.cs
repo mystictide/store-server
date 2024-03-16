@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using static Dapper.SqlMapper;
 using store.server.Infrasructure.Models.Users;
 using store.server.Infrastructure.Models.Users;
 using store.server.Infrasructure.Models.Helpers;
@@ -235,7 +234,11 @@ namespace store.server.Infrastructure.Data.Repo.Main
         {
             try
             {
-                string query = $@"Select * from usercart t where t.userid = {UserID};";
+                string query = $@"Select *,
+            (select name from products p where p.id = t.productid)productname,
+            (select name from brands b where b.id in (select id from productspecifications ps where ps.id = t.productid))brandname,
+            (select hex from colors c where c.id = t.colorid)colorhex,
+            (select amount from productpricing pp where pp.productid = t.productid and pp.colorid = t.colorid)pricing where t.userid = {UserID};";
                 using (var connection = GetConnection)
                 {
                     var res = await connection.QueryAsync<UserCart>(query);

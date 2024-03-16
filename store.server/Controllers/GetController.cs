@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using store.server.Infrastructure.Helpers;
-using store.server.Infrasructure.Models.Users;
 using store.server.Infrastructure.Data.Managers.Main;
 
 namespace store.server.Controllers
