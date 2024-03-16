@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using store.server.Infrastructure.Helpers;
+using store.server.Infrasructure.Models.Users;
 using store.server.Infrastructure.Data.Managers.Main;
 
 namespace store.server.Controllers
@@ -178,15 +179,35 @@ namespace store.server.Controllers
             {
                 if (AuthHelpers.Authorize(HttpContext, 1))
                 {
-                    var product = await new UserManager().Get(ID);
+                    var customer = await new UserManager().Get(ID);
                     var admin = AuthHelpers.CurrentUserID(HttpContext);
                     if (admin > 0)
                     {
-                        return Ok(product);
+                        return Ok(customer);
                     }
                     return StatusCode(401, "Access denied");
                 }
                 return StatusCode(401, "Authorization failed");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(401, ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("user/cart")]
+        public async Task<IActionResult> GetCart()
+        {
+            try
+            {
+                var user = AuthHelpers.CurrentUserID(HttpContext);
+                if (user > 0)
+                {
+                    var cart = await new UserManager().GetCart(user);
+                    return Ok(cart);
+                }
+                return StatusCode(401, "Access denied");
             }
             catch (Exception ex)
             {

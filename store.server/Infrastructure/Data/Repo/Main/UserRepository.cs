@@ -1,6 +1,6 @@
 ﻿using Dapper;
+using static Dapper.SqlMapper;
 using store.server.Infrasructure.Models.Users;
-using store.server.Infrastructure.Models.Main;
 using store.server.Infrastructure.Models.Users;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Models.Helpers;
@@ -218,6 +218,24 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 SET amount = {entity.Amount};
                 Select * from usercart t where t.userid = {entity.UserID};";
 
+                using (var connection = GetConnection)
+                {
+                    var res = await connection.QueryAsync<UserCart>(query);
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<UserCart>?> GetCart(int UserID)
+        {
+            try
+            {
+                string query = $@"Select * from usercart t where t.userid = {UserID};";
                 using (var connection = GetConnection)
                 {
                     var res = await connection.QueryAsync<UserCart>(query);
