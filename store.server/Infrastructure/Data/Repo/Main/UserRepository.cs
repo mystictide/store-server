@@ -215,12 +215,12 @@ namespace store.server.Infrastructure.Data.Repo.Main
 	 	        VALUES ({identity}, {entity.UserID}, {entity.ProductID}, {entity.ColorID}, {entity.Amount})
                 ON CONFLICT (id) DO UPDATE 
                 SET amount = {entity.Amount};
-                Select * from usercart t where t.userid = {entity.UserID};";
+                Select * from usercart t where t.userid = {entity.UserID} order by t.id asc;";
 
                 if (entity.Amount < 1)
                 {
                     query = $@"delete from usercart t where t.id = {entity.ID};
-                Select * from usercart t where t.userid = {entity.UserID};";
+                Select * from usercart t where t.userid = {entity.UserID} order by t.id asc;";
                 }
 
                 using (var connection = GetConnection)
