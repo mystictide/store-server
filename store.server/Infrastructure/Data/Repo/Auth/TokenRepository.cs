@@ -63,7 +63,7 @@ namespace store.server.Infrastructure.Data.Repo.Auth
                     var existingToken = await FindToken(admin, token.Token);
                     if (existingToken == null)
                     {
-                        var tokenResult = await con.QueryFirstOrDefaultAsync<Tokens>(query);
+                        var tokenres = await con.QueryFirstOrDefaultAsync<Tokens>(query);
                     }
                     return true;
                 }
