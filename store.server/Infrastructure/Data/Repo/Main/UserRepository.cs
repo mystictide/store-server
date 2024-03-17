@@ -244,7 +244,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
             (select name from products p where p.id = t.productid)productname,
             (select name from brands b where b.id in (select id from productspecifications ps where ps.id = t.productid))brandname,
             (select hex from colors c where c.id = t.colorid)colorhex,
-            (select amount from productpricing pp where pp.productid = t.productid and pp.colorid = t.colorid)pricing, (select source from productimages p2 where p2.productid = t.productid limit 1)image from usercart t where t.userid = {UserID};";
+            (select amount from productpricing pp where pp.productid = t.productid and pp.colorid = t.colorid)pricing, (select source from productimages p2 where p2.productid = t.productid limit 1)image from usercart t where t.userid = {UserID} order by t.id asc;";
                 using (var connection = GetConnection)
                 {
                     var res = await connection.QueryAsync<UserCart>(query);
