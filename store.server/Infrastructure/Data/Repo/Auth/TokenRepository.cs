@@ -53,7 +53,6 @@ namespace store.server.Infrastructure.Data.Repo.Auth
             {
                 string WhereClause = $" WHERE t.token = '{token}'";
                 string query = $@"
-                SET datestyle = dmy;
                 INSERT INTO {(admin ? "admintokens" : "usertokens")} (id, userid, token, expirydate)
 	                VALUES (default, '{token.UserID}', '{token.Token}', '{token.ExpiryDate}'::timestamp)
                 RETURNING *;";
