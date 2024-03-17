@@ -12,5 +12,10 @@
         public string? ColorHex { get; set; }
         public decimal? Pricing { get; set; }
         public string? Image { get; set; }
+        public decimal? Total
+        {
+            get { return Pricing * Amount; }
+            set { }
+        }
     }
 }
