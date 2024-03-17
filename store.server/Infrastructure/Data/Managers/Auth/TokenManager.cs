@@ -79,12 +79,12 @@ namespace store.server.Infrastructure.Data.Managers.Auth
                 return null;
             }
         }     
-        public async Task<UserReturn> RefreshToken(string accessToken)
+        public async Task<UserReturn> RefreshToken(string refreshToken)
         {
-            var existing = await FindToken(false, accessToken);
+            var existing = await FindToken(false, refreshToken);
             if (DateTime.Now > existing.ExpiryDate)
             {
-                await DeleteToken(false, accessToken);
+                await DeleteToken(false, refreshToken);
                 return null;
             }
             else
