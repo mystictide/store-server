@@ -217,6 +217,12 @@ namespace store.server.Infrastructure.Data.Repo.Main
                 SET amount = {entity.Amount};
                 Select * from usercart t where t.userid = {entity.UserID};";
 
+                if (entity.Amount < 1)
+                {
+                    query = $@"delete from usercart t where t.id = {entity.ID};
+                Select * from usercart t where t.userid = {entity.UserID};";
+                }
+
                 using (var connection = GetConnection)
                 {
                     var res = await connection.QueryAsync<UserCart>(query);
