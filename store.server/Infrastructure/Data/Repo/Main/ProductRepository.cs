@@ -824,7 +824,7 @@ namespace store.server.Infrastructure.Data.Repo.Main
 
                 string diningRoom = $@"
                 SELECT t.*, (select source from productimages p2 where p2.productid = t.id limit 1) as image FROM products t
-                WHERE t.categoryid in (select id from productcategories p where parentid = 3) order by t.id desc limit 16;";
+                WHERE t.categoryid in (select id from productcategories p where parentid = 4) order by t.id desc limit 16;";
 
                 using (var con = GetConnection)
                 {
