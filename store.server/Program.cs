@@ -1,6 +1,7 @@
 using Dapper;
 using Newtonsoft.Json.Serialization;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.FileProviders;
 using store.server.Infrastructure.Models.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +36,18 @@ if (app.Environment.IsDevelopment())
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
+var path = Path.Combine(app.Environment.ContentRootPath, "media");
+if (!Directory.Exists(path))
+{
+    Directory.CreateDirectory(path);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    RequestPath = "/static",
+    FileProvider = new PhysicalFileProvider(path)
 });
 
 SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());

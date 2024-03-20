@@ -56,36 +56,43 @@ namespace store.server.Infrastructure.Data.Managers.Auth
             return await _repo.SaveToken(admin, token);
         }
 
-        public async Task<AdminReturn> RefreshAdminToken(string accessToken)
+        public async Task<AdminReturn> RefreshAdminToken(string refreshToken)
         {
-            var existing = await FindToken(true, accessToken);
-            if (DateTime.Now > existing.ExpiryDate)
+            var existing = await FindToken(true, refreshToken);
+            if (existing != null)
             {
-                await DeleteToken(true, accessToken);
-                return null;
+                if (DateTime.Now > existing.ExpiryDate)
+                {
+                    await DeleteToken(true, refreshToken);
+                    return null;
+                }
+                else
+                {
+                    var admin = new AdminReturn();
+                    admin.AccessToken = GenerateToken(existing.UserID, 1);
+                    admin.RefreshToken = existing.Token;
+                    return admin;
+                }
             }
             else
             {
-                var admin = new AdminReturn();
-                admin.AccessToken = GenerateToken(existing.UserID, 1);
-                admin.RefreshToken = existing.Token;
-                return admin;
+                return null;
             }
         }     
-        public async Task<UserReturn> RefreshToken(string accessToken)
+        public async Task<UserReturn> RefreshToken(string refreshToken)
         {
-            var existing = await FindToken(false, accessToken);
+            var existing = await FindToken(false, refreshToken);
             if (DateTime.Now > existing.ExpiryDate)
             {
-                await DeleteToken(false, accessToken);
+                await DeleteToken(false, refreshToken);
                 return null;
             }
             else
             {
-                var admin = new UserReturn();
-                admin.AccessToken = GenerateToken(existing.UserID, 1);
-                admin.RefreshToken = existing.Token;
-                return admin;
+                var user = new UserReturn();
+                user.AccessToken = GenerateToken(existing.UserID, 1);
+                user.RefreshToken = existing.Token;
+                return user;
             }
         }
     }

@@ -13,31 +13,22 @@ namespace store.server.Controllers
     public class AuthController : ControllerBase
     {
         [HttpPost]
-        [Route("generate/password")]
-        public async Task<IActionResult> GeneratePassword([FromBody] string password)
-        {
-            try
-            {
-                var hashedPassword = new AdminManager().generatePassword(password);
-                return Ok(hashedPassword);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(401, ex.Message);
-            }
-        }
-
-        [HttpPost]
         [Route("admin/refresh/token")]
         public async Task<IActionResult> RefreshAdminToken([FromBody] string token)
         {
             try
             {
                 var data = await new TokenManager().RefreshAdminToken(token);
-                var adminData = new AdminReturn();
-                adminData.AccessToken = data.AccessToken;
-                adminData.RefreshToken = data.RefreshToken;
-                return Ok(adminData);
+                if (data != null)
+                {
+                    var adminData = new AdminReturn
+                    {
+                        AccessToken = data.AccessToken,
+                        RefreshToken = data.RefreshToken
+                    };
+                    return Ok(adminData);
+                }
+                return Ok(null);
             }
             catch (Exception ex)
             {
@@ -70,11 +61,7 @@ namespace store.server.Controllers
             try
             {
                 var data = await new UserManager().Register(entity);
-                var userData = new UserReturn();
-                userData.Client.ID = data.ID;
-                userData.Client.FirstName = data.FirstName;
-                userData.Client.LastName = data.LastName;
-                userData.Client.Token = data.Token;
+                var userData = new UserReturn { Client = new UserClient { ID = data.ID, Email = data.Email, FirstName = data.FirstName, LastName = data.LastName }, AccessToken = data.AccessToken, RefreshToken = data.RefreshToken };
                 return Ok(userData);
             }
             catch (Exception ex)
@@ -90,12 +77,7 @@ namespace store.server.Controllers
             try
             {
                 var data = await new UserManager().Login(user);
-                var userData = new UserReturn();
-                userData.Client.ID = data.ID;
-                userData.Client.FirstName = data.FirstName;
-                userData.Client.LastName = data.LastName;
-                userData.Client.Email = data.Email;
-                userData.Client.Token = data.Token;
+                var userData = new UserReturn { Client = new UserClient { ID = data.ID, Email = data.Email, FirstName = data.FirstName, LastName = data.LastName }, AccessToken = data.AccessToken, RefreshToken = data.RefreshToken };
                 return Ok(userData);
             }
             catch (Exception ex)
@@ -111,11 +93,7 @@ namespace store.server.Controllers
             try
             {
                 var data = await new AdminManager().Login(admin);
-                var adminData = new AdminReturn();
-                adminData.Client.ID = data.ID;
-                adminData.Client.Email = data.Email;
-                adminData.AccessToken = data.AccessToken;
-                adminData.RefreshToken = data.RefreshToken;
+                var adminData = new AdminReturn { Client = new AdminClient { ID = data.ID, Email = data.Email }, AccessToken = data.AccessToken, RefreshToken = data.RefreshToken };
                 return Ok(adminData);
             }
             catch (Exception ex)

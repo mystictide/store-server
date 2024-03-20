@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using store.server.Infrasructure.Models.Users;
+using store.server.Infrastructure.Models.Users;
 using store.server.Infrasructure.Models.Helpers;
 using store.server.Infrastructure.Models.Helpers;
 using store.server.Infrastructure.Data.Repo.Helpers;
@@ -45,8 +46,8 @@ namespace store.server.Infrastructure.Data.Repo.Main
             try
             {
                 string query = $@"
-                INSERT INTO users (email, password)
-	                VALUES ('{entity.Email}', '{entity.Password}')
+                INSERT INTO users (firstname, lastname, email, password)
+	                VALUES ('{entity.FirstName}', '{entity.LastName}', '{entity.Email}', '{entity.Password}')
                 RETURNING *;";
 
                 using (var con = GetConnection)
@@ -195,6 +196,59 @@ namespace store.server.Infrastructure.Data.Repo.Main
                     result.filter = request.filter;
                     result.filterModel = request.filterModel;
                     return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<UserCart>?> ManageCart(UserCart entity)
+        {
+            try
+            {
+                dynamic identity = entity.ID > 0 ? entity.ID : "default";
+                string query = $@"
+                INSERT INTO usercart (id, userid, productid, colorid, amount)
+	 	        VALUES ({identity}, {entity.UserID}, {entity.ProductID}, {entity.ColorID}, {entity.Amount})
+                ON CONFLICT (id) DO UPDATE 
+                SET amount = {entity.Amount};
+                Select * from usercart t where t.userid = {entity.UserID} order by t.id asc;";
+
+                if (entity.Amount < 1)
+                {
+                    query = $@"delete from usercart t where t.id = {entity.ID};
+                Select * from usercart t where t.userid = {entity.UserID} order by t.id asc;";
+                }
+
+                using (var connection = GetConnection)
+                {
+                    var res = await connection.QueryAsync<UserCart>(query);
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<UserCart>?> GetCart(int UserID)
+        {
+            try
+            {
+                string query = $@"Select *,
+            (select name from products p where p.id = t.productid)productname,
+            (select name from brands b where b.id in (select id from productspecifications ps where ps.id = t.productid))brandname,
+            (select hex from colors c where c.id = t.colorid)colorhex,
+            (select amount from productpricing pp where pp.productid = t.productid and pp.colorid = t.colorid)pricing, (select source from productimages p2 where p2.productid = t.productid limit 1)image from usercart t where t.userid = {UserID} order by t.id asc;";
+                using (var connection = GetConnection)
+                {
+                    var res = await connection.QueryAsync<UserCart>(query);
+                    return res;
                 }
             }
             catch (Exception ex)

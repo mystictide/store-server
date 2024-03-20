@@ -13,6 +13,12 @@
         {
             ID = 0;
             Keyword = "";
+            Brands = [];
+            Materials = [];
+            Categories = [];
+            Colors = [];
+            PriceRangeMin = 0;
+            PriceRangeMax = 0;
             pageSize = 14;
             page = 1;
             SortBy = "desc";
@@ -20,6 +26,12 @@
         }
         public int? ID { get; set; }
         public string? Keyword { get; set; }
+        public List<string?>? Brands { get; set; }
+        public List<string?>? Materials { get; set; }
+        public List<string?>? Categories { get; set; }
+        public List<string?>? Colors { get; set; }
+        public int? PriceRangeMin { get; set; }
+        public int? PriceRangeMax { get; set; }
         public string? SortBy { get; set; }
         public bool IsActive { get; set; }
         public int page { get; set; }

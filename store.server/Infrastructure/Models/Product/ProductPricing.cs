@@ -1,9 +1,10 @@
 ﻿namespace store.server.Infrastructure.Models.Product
 {
-    public class ProductSizes
+    public class ProductPricing
     {
         public int? ID { get; set; }
         public int? ProductID { get; set; }
-        public int? Size { get; set; }
+        public int? ColorID { get; set; }
+        public decimal? Amount { get; set; }
     }
 }

@@ -1,13 +1,65 @@
 ﻿using SkiaSharp;
+using store.server.Infrastructure.Models.Product;
 using store.server.Infrastructure.Data.Repo.Helpers;
 
 namespace store.server.Helpers
 {
     public class CustomHelpers
     {
-        public static string PathFromUserID(string UserID)
+        public static string SeralizeFilterCategories(List<string> Categories)
         {
-            return "/" + string.Join("/", UserID.ToArray()) + "/";
+            string categories = "";
+            for (int i = 0; i < Categories.Count; i++)
+            {
+                categories += "'%" + Categories[i] + "%'";
+                if ((i + 1) != Categories.Count)
+                {
+                    categories += ",";
+                }
+            }
+            return categories;
+        }
+
+        public static string SeralizeFilterBrands(List<string> Brands)
+        {
+            string brands = "";
+            for (int i = 0; i < Brands.Count; i++)
+            {
+                brands += "'%" + Brands[i] + "%'";
+                if ((i + 1) != Brands.Count)
+                {
+                    brands += ",";
+                }
+            }
+            return brands;
+        }
+
+        public static string SeralizeFilterMaterials(List<string> Materials)
+        {
+            string materials = "";
+            for (int i = 0; i < Materials.Count; i++)
+            {
+                materials += "'%" + Materials[i] + "%'";
+                if ((i + 1) != Materials.Count)
+                {
+                    materials += ",";
+                }
+            }
+            return materials;
+        }
+
+        public static string SeralizeFilterColors(List<string> Colors)
+        {
+            string colors = "";
+            for (int i = 0; i < Colors.Count; i++)
+            {
+                colors += "'%" + Colors[i] + "%'";
+                if ((i + 1) != Colors.Count)
+                {
+                    colors += ",";
+                }
+            }
+            return colors;
         }
 
         public static async Task<byte[]> ResizeImage(IFormFile file, int width, int height)
@@ -85,22 +137,20 @@ namespace store.server.Helpers
 
         }
 
-        public static async Task<string> SaveUserAvatar(int UserID, string envPath, IFormFile file)
+        public static async Task<string> SaveImage(int ProductID, string envPath, IFormFile file)
         {
             try
             {
-                var userPath = PathFromUserID(UserID.ToString());
-                var savePath = envPath + "/media/avatars/user" + userPath;
+                var savePath = envPath + "/media/products/" + ProductID + "/";
+                var fileName = $"{Guid.NewGuid()}.jpg";
 
-                var small = await ResizeImage(file, 220, 220);
-                //var large = await ResizeImage(file, 800, 800);
-                if (small != null)
+                var size = await ResizeImage(file, 600, 600);
+                if (size != null)
                 {
-                    var writeSmall = await WriteImage(small, savePath, "ua-small.jpg");
-                    //var writeLarge = await WriteImage(large, savePath, "ua-large.jpg");
-                    if (writeSmall)
+                    var write = await WriteImage(size, savePath, fileName);
+                    if (write)
                     {
-                        return userPath;
+                        return fileName;
                     }
                     else
                     {
@@ -116,6 +166,31 @@ namespace store.server.Helpers
             {
                 await new LogsRepository().CreateLog(ex);
                 return null;
+            }
+        }
+
+        public static async Task<bool> DeleteImage(ProductImages image, string envPath)
+        {
+            try
+            {
+                var folderPath = envPath + "/media/products/" + image.ProductID + "/";
+                var imagePath = folderPath + $"{image.Source}";
+
+                if (File.Exists(imagePath))
+                {
+                    File.Delete(imagePath);
+                    if (Directory.GetFiles(folderPath).Length == 0)
+                    {
+                        Directory.Delete(folderPath, false);
+                    }
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                await new LogsRepository().CreateLog(ex);
+                return false;
             }
         }
     }
